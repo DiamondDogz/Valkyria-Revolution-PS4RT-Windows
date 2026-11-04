@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ravn</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #101010;
+      --ink-soft: #1c1c1c;
+      --paper: #f4f1ea;
+      --muted: #b7b1a8;
+      --gold: #f0c400;
+      --line: #2a2a2a;
+      --ui: 1;
+      font-family: "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--ink); color: var(--paper); }
+    html { font-size: calc(16px * var(--ui)); }
+    button, .choice { cursor: pointer; }
+    svg { width: 1.15em; height: 1.15em; }
+    .launcher { display: flex; height: 100%; min-height: 0; overflow: hidden; }
+    .rail {
+      display: flex; width: 3.25rem; flex: none; flex-direction: column; align-items: center;
+      gap: 0.5rem; border-right: 1px solid var(--line); padding: 0.75rem 0;
+    }
+    .rail button {
+      display: flex; height: 2.75rem; width: 2.75rem; align-items: center; justify-content: center;
+      border: 0; border-radius: 999px; background: transparent; color: var(--paper);
+    }
+    .rail button.on, .rail button.gold { color: var(--gold); }
+    .rail .push { margin-top: auto; }
+    .stage { position: relative; min-width: 0; min-height: 0; flex: 1; overflow: hidden; background: #1c1c1c; }
+    .hero { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .mark {
+      position: absolute; z-index: 1; top: 6%; left: 50%; width: min(88%, 56rem); height: auto;
+      transform: translateX(-50%); pointer-events: none;
+    }
+    .dock {
+      position: absolute; z-index: 2; right: 0; bottom: 0; left: 0; display: grid; gap: 0.75rem; padding: 1rem;
+      background: linear-gradient(180deg, transparent, rgb(0 0 0 / 72%));
+    }
+    .gold { color: var(--gold); }
+    .muted { color: var(--muted); overflow-wrap: anywhere; }
+    .play-row { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+    .meter { height: 0.35rem; flex: 1; min-width: 0; border-radius: 999px; background: rgb(255 255 255 / 16%); }
+    .meter span { display: block; height: 100%; width: 100%; background: var(--gold); }
+    .play {
+      display: flex; height: 3.25rem; width: 3.25rem; flex: none; align-items: center; justify-content: center;
+      border: 0; border-radius: 999px; background: var(--gold); color: var(--ink);
+    }
+    .panel {
+      position: absolute; top: 0; right: 0; bottom: 0; z-index: 2;
+      width: min(46%, 28rem); max-width: 100%; min-width: 0;
+      overflow: auto; padding: 1rem; background: rgb(16 16 16 / 94%); border-left: 1px solid var(--line);
+    }
+    .grid { display: grid; gap: 1rem; margin-top: 1rem; min-width: 0; }
+    .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .choice, .text-btn {
+      min-height: 2.75rem; border: 0; border-radius: 999px; padding: 0 0.8rem; background: var(--ink); color: var(--paper);
+    }
+    .choice.on { background: var(--gold); color: var(--ink); }
+    label, .row, ul, li { min-width: 0; max-width: 100%; }
+    label { display: grid; gap: 0.35rem; }
+    .row { display: flex; gap: 0.5rem; align-items: center; }
+    .row input {
+      width: 0; min-height: 2.75rem; min-width: 0; flex: 1; border: 1px solid var(--line);
+      border-radius: 0.7rem; background: var(--ink); color: var(--paper); padding: 0 0.75rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    input[type="range"] { width: 100%; accent-color: var(--gold); }
+    .panel.wide { left: 0; width: auto; }
+    .trophy { display: grid; grid-template-columns: 3rem 1fr auto minmax(8rem, 34%); gap: 0.6rem; align-items: center; width: 100%; min-height: 4.2rem; margin-top: 0.4rem; border: 0; border-radius: 0.7rem; background: #161616; color: var(--paper); text-align: left; padding: 0.4rem 0.6rem; }
+    .trophy img { width: 3rem; height: 3rem; object-fit: cover; background: #0c0c0c; }
+    .trophy b { display: block; }
+    .trophy small { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="launcher">
+    <aside class="rail">
+      <button type="button" id="home" aria-label="Accueil">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg>
+      </button>
+      <button type="button" id="open-settings" aria-label="Réglages">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <button type="button" id="open-paths" aria-label="Chemins">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h6l2 2h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>
+      </button>
+      <button type="button" id="open-trophies" aria-label="Trophies">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4h8v3a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3M9 20h6"/></svg>
+      </button>
+      <button type="button" id="open-language" aria-label="Game language">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      </button>
+      <button type="button" id="lang" class="push text-xs" aria-label="Launcher language">EN</button>
+      <button type="button" id="music" class="gold" aria-label="Theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="16" r="2"/></svg>
+      </button>
+    </aside>
+    <section class="stage">
+      <video class="hero" src="/brand/fond-loop.mp4" autoplay muted loop playsinline></video>
+      <img class="mark" src="/brand/logo.png" alt="Ravn, ᚼᚱᛅᚠᚾ" />
+      <div class="dock">
+        <p id="note" class="gold" hidden></p>
+        <div class="play-row">
+          <span id="ready">Ready</span>
+          <div class="meter" aria-hidden="true"><span></span></div>
+          <span id="play-label">Play</span>
+          <button type="button" class="play" id="play" aria-label="Play">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="settings" class="panel" hidden>
+        <h2 id="settings-title">Build settings</h2>
+        <div class="grid" id="settings-grid"></div>
+      </div>
+      <div id="paths" class="panel" hidden>
+        <h2 id="paths-title">Paths</h2>
+        <p class="muted" id="paths-hint"></p>
+        <div class="grid">
+          <label><span id="game-label">Game folder</span><span class="row"><input id="game" /><button type="button" class="text-btn" id="pick-game">Browse</button></span></label>
+          <label><span id="update-label">Update</span><span class="row"><input id="update" /><button type="button" class="text-btn" id="pick-update">Browse</button></span></label>
+        </div>
+      </div>
+      <div id="language" class="panel" hidden>
+        <h2 id="language-title">Game language</h2>
+        <p class="muted" id="language-hint"></p>
+        <div class="choices" id="game-langs"></div>
+      </div>
+      <div id="trophies" class="panel wide" hidden>
+        <h2 id="trophies-title">Trophies</h2>
+        <p class="muted" id="trophies-hint"></p>
+        <div id="trophy-list"></div>
+      </div>
+    </section>
+  </main>
+  <audio id="audio" loop></audio>
+  <script>
+    const state = { settings: {}, paths: { game: "", update: "" }, languages: ["en"], media: {}, trophies: null };
+    const grades = {
+      en: { Platinum: "Platinum", Gold: "Gold", Silver: "Silver", Bronze: "Bronze" },
+      fr: { Platinum: "Platine", Gold: "Or", Silver: "Argent", Bronze: "Bronze" },
+      es: { Platinum: "Platino", Gold: "Oro", Silver: "Plata", Bronze: "Bronce" },
+      de: { Platinum: "Platin", Gold: "Gold", Silver: "Silber", Bronze: "Bronze" },
+    };
+    // Labels for the languages a game folder can offer; the host says which ones this one has.
+    const languageNames = { en: "English", ja: "日本語", fr: "Français", de: "Deutsch", es: "Español", it: "Italiano", ko: "한국어", "zh-Hant": "繁體中文" };
+    function gameLanguages() { return (state.languages || ["en"]).map((id) => ({ id, label: languageNames[id] || id })); }
+    function knownGameLang(value) { return (state.languages || ["en"]).includes(value) ? value : ""; }
+    let trophyLang = "en";
+    const panel = { name: "" };
+    const audio = document.querySelector("#audio");
+    const note = document.querySelector("#note");
+    const copy = {
+      en: {
+        home: "Home", settings: "Settings", paths: "Paths", theme: "Theme", language: "Language",
+        ready: "Ready", play: "Play", settingsTitle: "Build settings", pathsTitle: "Paths",
+        pathsHint: "Both are extracted folders with eboot.bin and sce_sys. The update is optional; neither folder is changed.",
+        game: "Game folder", update: "Update", browse: "Browse", chooseFolder: "Choose folder", remove: "Remove",
+        output: "Output", window: "Window", windowed: "Windowed", borderless: "Borderless", fullscreen: "Fullscreen",
+        render: "Render resolution", nativeRes: "Native",
+        rate: "Frame rate ceiling", aniso: "Anisotropic, on restart", gameDefault: "Game", sharpness: "Sharpness",
+        pickerOpen: "Picker open.", pickFail: "Could not select.",
+        launching: "The game is starting. The log opens separately.", launchFail: "Could not start.",
+        "picker-unavailable": "The Windows picker is not available here.",
+        "no-pkg": "No .pkg in this folder.",
+        "need-game": "Choose the game folder first.",
+        "missing-update": "That update folder has no eboot.bin.",
+        "already-running": "The game is already running.",
+        "missing-game": "That game folder has no eboot.bin.",
+        trophies: "Trophies", trophyHint: "Read from your trophy00.trp. Nothing is sent.",
+        locked: "Locked", unlocked: "Unlocked", hidden: "Hidden", missingTrp: "trophy00.trp was not found in that game folder.",
+        gameLang: "Game language", launcherLang: "Launcher language",
+        gameLangHint: "Game text and trophies, on the next Play. Only the languages your game folder carries are listed.",
+      },
+      fr: {
+        home: "Accueil", settings: "Réglages", paths: "Chemins", theme: "Thème", language: "Langue",
+        ready: "Prêt", play: "Jouer", settingsTitle: "Réglages du build", pathsTitle: "Chemins",
+        pathsHint: "Deux dossiers extraits, avec eboot.bin et sce_sys. La mise à jour est facultative ; aucun des deux n'est modifié.",
+        game: "Dossier du jeu", update: "Mise à jour", browse: "Parcourir", chooseFolder: "Choisir le dossier", remove: "Retirer",
+        output: "Sortie", window: "Fenêtre", windowed: "Fenêtré", borderless: "Sans bordure", fullscreen: "Plein écran",
+        render: "Résolution de rendu", nativeRes: "Native",
+        rate: "Cadence maximale", aniso: "Anisotrope, au redémarrage", gameDefault: "Jeu", sharpness: "Netteté",
+        pickerOpen: "Sélecteur ouvert.", pickFail: "Sélection impossible.",
+        launching: "Le jeu démarre. Le journal s'ouvre à part.", launchFail: "Lancement impossible.",
+        "picker-unavailable": "Le sélecteur Windows n'est pas disponible ici.",
+        "no-pkg": "Aucun .pkg dans ce dossier.",
+        "need-game": "Choisis d'abord le dossier du jeu.",
+        "missing-update": "Ce dossier de mise à jour n'a pas d'eboot.bin.",
+        "already-running": "Le jeu tourne déjà.",
+        "missing-game": "Ce dossier de jeu n'a pas d'eboot.bin.",
+        trophies: "Trophées", trophyHint: "Lu dans ton trophy00.trp. Rien n'est envoyé.",
+        locked: "Fermé", unlocked: "Pris", hidden: "Caché", missingTrp: "trophy00.trp est introuvable dans ce dossier.",
+        gameLang: "Langue du jeu", launcherLang: "Langue du lanceur",
+        gameLangHint: "Textes du jeu et trophées, au prochain lancement. Seules les langues présentes dans ton dossier de jeu sont proposées.",
+      },
+    };
+    let lang = "en";
+    function t(key) { return copy[lang][key]; }
+    function explain(error) { return t(error) || error || t("pickFail"); }
+
+    function showNote(text) {
+      note.hidden = !text;
+      note.textContent = text || "";
+    }
+
+    function choices(label, value, options, onPick) {
+      const block = document.createElement("div");
+      const title = document.createElement("p");
+      title.className = "muted";
+      title.textContent = label;
+      const row = document.createElement("div");
+      row.className = "choices";
+      options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "choice" + (String(value) === option.id ? " on" : "");
+        button.textContent = option.label;
+        button.addEventListener("click", () => onPick(option.id));
+        row.appendChild(button);
+      });
+      block.append(title, row);
+      return block;
+    }
+
+    function render() {
+      audio.muted = false;
+      audio.volume = Number(state.settings.musicVolume ?? 0.55);
+      if (state.media.track && !audio.src.endsWith("/media/theme.mp3")) {
+        audio.src = "/media/theme.mp3";
+        audio.play().catch(() => {});
+      }
+      document.querySelector("#game").value = state.paths.game || "";
+      document.querySelector("#game").title = state.paths.game || "";
+      document.querySelector("#update").value = state.paths.update || "";
+      document.querySelector("#update").title = state.paths.update || "";
+      document.querySelector("#ready").textContent = t("ready");
+      document.querySelector("#play-label").textContent = t("play");
+      document.querySelector("#play").setAttribute("aria-label", t("play"));
+      document.querySelector("#settings-title").textContent = t("settingsTitle");
+      document.querySelector("#paths-title").textContent = t("pathsTitle");
+      document.querySelector("#paths-hint").textContent = t("pathsHint");
+      document.querySelector("#game-label").textContent = t("game");
+      document.querySelector("#update-label").textContent = t("update");
+      document.querySelector("#pick-game").textContent = t("browse");
+      document.querySelector("#pick-update").textContent = t("browse");
+      document.querySelector("#home").setAttribute("aria-label", t("home"));
+      document.querySelector("#open-settings").setAttribute("aria-label", t("settings"));
+      document.querySelector("#open-paths").setAttribute("aria-label", t("paths"));
+      document.querySelector("#open-trophies").setAttribute("aria-label", t("trophies"));
+      document.querySelector("#open-language").setAttribute("aria-label", t("gameLang"));
+      document.querySelector("#lang").setAttribute("aria-label", t("launcherLang"));
+      document.querySelector("#music").setAttribute("aria-label", t("theme"));
+      document.querySelector("#lang").textContent = lang === "en" ? "EN" : "FR";
+      document.documentElement.lang = lang;
+      const grid = document.querySelector("#settings-grid");
+      const sharp = Math.round(Number(state.settings.sharpness || 0) * 100);
+      grid.replaceChildren(
+        choices(t("output"), state.settings.outputRes, [{ id: "1920x1080", label: "1920 × 1080" }, { id: "2560x1440", label: "2560 × 1440" }, { id: "3840x2160", label: "3840 × 2160" }], (id) => patch({ outputRes: id })),
+        choices(t("window"), state.settings.displayMode, [{ id: "windowed", label: t("windowed") }, { id: "borderless", label: t("borderless") }, { id: "fullscreen", label: t("fullscreen") }], (id) => patch({ displayMode: id })),
+        choices(t("render"), state.settings.renderResolution, [{ id: "native", label: t("nativeRes") }, { id: "720p", label: "720p" }, { id: "1440p", label: "1440p" }, { id: "1800p", label: "1800p" }, { id: "4K", label: "4K" }], (id) => patch({ renderResolution: id })),
+        choices(t("rate"), state.settings.engineFps, [60, 120, 240].map((n) => ({ id: String(n), label: String(n) })), (id) => patch({ engineFps: Number(id) })),
+        choices(t("aniso"), state.settings.anisotropy, [0, 2, 4, 8, 16].map((n) => ({ id: String(n), label: n ? n + "×" : t("gameDefault") })), (id) => patch({ anisotropy: Number(id) }))
+      );
+      const sharpLabel = document.createElement("label");
+      sharpLabel.className = "muted";
+      sharpLabel.textContent = t("sharpness") + " " + sharp + " %";
+      const range = document.createElement("input");
+      range.type = "range";
+      range.min = "0";
+      range.max = "100";
+      range.value = String(sharp);
+      range.addEventListener("input", () => {
+        const value = Number(range.value);
+        patch({ sharpness: value / 100 });
+      });
+      sharpLabel.appendChild(range);
+      grid.appendChild(sharpLabel);
+      document.querySelector("#open-settings").classList.toggle("on", panel.name === "settings");
+      document.querySelector("#open-paths").classList.toggle("on", panel.name === "paths");
+      document.querySelector("#open-trophies").classList.toggle("on", panel.name === "trophies");
+      document.querySelector("#open-language").classList.toggle("on", panel.name === "language");
+      document.querySelector("#language").hidden = panel.name !== "language";
+      document.querySelector("#language-title").textContent = t("gameLang");
+      document.querySelector("#language-hint").textContent = t("gameLangHint");
+      const gameLangs = document.querySelector("#game-langs");
+      gameLangs.replaceChildren();
+      gameLanguages().forEach((item) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "choice" + (item.id === trophyLang ? " on" : "");
+        button.textContent = item.label;
+        button.addEventListener("click", () => {
+          trophyLang = item.id;
+          patch({ gameLang: item.id, trophyLang: item.id });
+        });
+        gameLangs.appendChild(button);
+      });
+      document.querySelector("#settings").hidden = panel.name !== "settings";
+      document.querySelector("#paths").hidden = panel.name !== "paths";
+      document.querySelector("#trophies").hidden = panel.name !== "trophies";
+      document.querySelector("#trophies-title").textContent = t("trophies");
+      document.querySelector("#trophies-hint").textContent = t("trophyHint");
+      const trophyList = document.querySelector("#trophy-list");
+      trophyList.replaceChildren();
+      const file = state.trophies;
+      if (file && file.languages) {
+        const taken = file.trophies.filter((item) => item.when).length;
+        document.querySelector("#trophies-hint").textContent = t("trophyHint") + "  " + taken + " / " + file.trophies.length;
+        const words = grades[trophyLang] || grades.en;
+        file.trophies.forEach((item) => {
+          const row = document.createElement("div");
+          row.className = "trophy";
+          const img = document.createElement("img");
+          img.alt = "";
+          const main = document.createElement("span");
+          const name = document.createElement("b");
+          const grade = document.createElement("small");
+          const copyText = (item.text && (item.text[trophyLang] || item.text.en)) || { name: "", detail: "" };
+          const hidden = item.hidden && !item.when;
+          if (!hidden && item.icon) img.src = item.icon;
+          name.textContent = hidden ? t("hidden") : copyText.name;
+          grade.textContent = words[item.grade] || item.grade;
+          main.append(name, grade);
+          const when = document.createElement("small");
+          when.textContent = item.when ? item.when.replace("T", " ").replace("Z", "") : t("locked");
+          const detail = document.createElement("small");
+          detail.textContent = hidden ? "" : copyText.detail;
+          row.append(img, main, when, detail);
+          trophyList.appendChild(row);
+        });
+      }
+    }
+
+    async function save() {
+      await fetch("/api/state", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings: state.settings, paths: state.paths }) });
+    }
+
+    function patch(partial) {
+      Object.assign(state.settings, partial);
+      render();
+      save();
+    }
+
+    async function pick(kind) {
+      showNote(t("pickerOpen"));
+      const response = await fetch("/api/browse", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind }) });
+      const payload = await response.json();
+      if (!response.ok) {
+        showNote(explain(payload.error));
+        return;
+      }
+      const { languages, ...paths } = payload;
+      Object.assign(state.paths, paths);
+      if (languages) state.languages = languages;
+      showNote("");
+      render();
+    }
+
+    document.querySelector("#home").addEventListener("click", () => { panel.name = ""; render(); });
+    document.querySelector("#open-settings").addEventListener("click", () => { panel.name = panel.name === "settings" ? "" : "settings"; render(); });
+    document.querySelector("#open-paths").addEventListener("click", () => { panel.name = panel.name === "paths" ? "" : "paths"; render(); });
+    document.querySelector("#open-language").addEventListener("click", () => { panel.name = panel.name === "language" ? "" : "language"; render(); });
+    document.querySelector("#open-trophies").addEventListener("click", async () => {
+      panel.name = panel.name === "trophies" ? "" : "trophies";
+      render();
+      if (panel.name !== "trophies") return;
+      const response = await fetch("/api/trophies");
+      const payload = await response.json();
+      if (!response.ok) {
+        showNote(payload.error === "missing-trp" ? t("missingTrp") : explain(payload.error));
+        return;
+      }
+      state.trophies = payload;
+      trophyWatch = trophyStamp(payload);
+      render();
+    });
+    function trophyStamp(file) {
+      if (!file || !file.trophies) return "";
+      return file.trophies.map((item) => item.id + "=" + (item.when || "")).join(",");
+    }
+
+    let trophyWatch = "";
+    async function watchTrophies() {
+      if (panel.name !== "trophies") return;
+      try {
+        const response = await fetch("/api/trophies");
+        if (!response.ok) return;
+        const payload = await response.json();
+        const stamp = trophyStamp(payload);
+        if (stamp === trophyWatch) return;
+        trophyWatch = stamp;
+        state.trophies = payload;
+        render();
+      } catch (error) {}
+    }
+    setInterval(watchTrophies, 1000);
+
+    document.querySelector("#pick-game").addEventListener("click", () => pick("game"));
+    document.querySelector("#pick-update").addEventListener("click", () => pick("update"));
+    document.querySelector("#game").addEventListener("change", (event) => { state.paths.game = event.target.value; save(); });
+    document.querySelector("#update").addEventListener("change", (event) => { state.paths.update = event.target.value; save(); });
+    document.querySelector("#music").addEventListener("click", async () => {
+      if (!audio.src) return;
+      audio.muted = false;
+      if (audio.paused) await audio.play();
+      else audio.pause();
+    });
+    document.querySelector("#play").addEventListener("click", async () => {
+      const response = await fetch("/api/play", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings: state.settings, paths: state.paths }) });
+      const payload = await response.json();
+      if (response.ok) audio.pause();
+      showNote(response.ok ? t("launching") : (payload.error ? explain(payload.error) : t("launchFail")));
+    });
+
+    function fit() {
+      const stage = document.querySelector(".stage");
+      const scale = Math.min(stage.clientWidth / 1440, stage.clientHeight / 810);
+      document.documentElement.style.setProperty("--ui", String(Math.max(0.68, Math.min(scale, 1.25))));
+    }
+    addEventListener("resize", fit);
+    fit();
+
+    fetch("/api/state").then((response) => response.json()).then((payload) => {
+      Object.assign(state.settings, payload.settings || {});
+      Object.assign(state.paths, payload.paths || {});
+      state.media = payload.media || {};
+      state.languages = payload.languages || ["en"];
+      lang = state.settings.lang === "fr" ? "fr" : "en";
+      trophyLang = knownGameLang(state.settings.gameLang) || knownGameLang(state.settings.trophyLang) || (lang === "fr" ? "fr" : "en");
+      state.settings.gameLang = trophyLang;
+      state.settings.trophyLang = trophyLang;
+      render();
+    });
+    document.querySelector("#lang").addEventListener("click", () => {
+      lang = lang === "en" ? "fr" : "en";
+      state.settings.lang = lang;
+      render();
+      save();
+    });
+  </script>
+</body>
+</html>
