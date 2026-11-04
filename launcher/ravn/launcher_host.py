@@ -253,6 +253,9 @@ def launch(state):
     if not (Path(game) / "eboot.bin").is_file():
         raise RuntimeError("missing-game")
     update = str(state["paths"].get("update") or "").strip()
+    # The game folder entered again as its own update means no update.
+    if update and os.path.normcase(os.path.realpath(update)) == os.path.normcase(os.path.realpath(game)):
+        update = ""
     if update and not (Path(update) / "eboot.bin").is_file():
         raise RuntimeError("missing-update")
     if PROCESS["handle"] is not None and PROCESS["handle"].poll() is None:
