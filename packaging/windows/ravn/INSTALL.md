@@ -8,7 +8,6 @@ English first. La version française suit.
 - A GPU with a current Vulkan driver.
 - Microsoft Edge WebView2. It is already installed with Edge on current Windows 10 and 11. The launcher does not bundle it.
 - Your own copy of Valkyria Revolution, PlayStation 4, title id CUSA06810, already extracted. The folder must contain `eboot.bin`, `sce_sys` and `sce_module`.
-- Optional: your own update, also extracted to a folder with `eboot.bin` and `sce_sys`.
 
 This project does not provide the game, keys, firmware, or saves.
 
@@ -21,10 +20,7 @@ This project does not provide the game, keys, firmware, or saves.
 
 ## Paths
 
-1. Game folder: the extracted CUSA06810 directory, not a PKG.
-2. Update: the extracted update folder, only if you have one.
-
-Neither folder is changed. The update is laid over the game in a temporary view at each start. The Linux release targets the base game, CUSA06810, without an update: leave Update empty unless you want to try one.
+Game folder: the extracted CUSA06810 directory, not a PKG. It is not changed. As in the Linux release, Ravn runs the base game: no update is needed.
 
 ## Play
 
@@ -50,7 +46,6 @@ Send the text of the console window, with your Windows version and graphics card
 - Une carte graphique avec un pilote Vulkan à jour.
 - Microsoft Edge WebView2. Il est déjà installé avec Edge sur Windows 10 et 11 à jour. Le lanceur ne l'embarque pas.
 - Votre propre copie de Valkyria Revolution, PlayStation 4, CUSA06810, déjà extraite. Le dossier contient `eboot.bin`, `sce_sys` et `sce_module`.
-- Facultatif : votre propre mise à jour, extraite elle aussi dans un dossier avec `eboot.bin` et `sce_sys`.
 
 Ce projet ne fournit ni le jeu, ni clés, ni firmware, ni sauvegardes.
 
@@ -63,10 +58,7 @@ Ce projet ne fournit ni le jeu, ni clés, ni firmware, ni sauvegardes.
 
 ## Chemins
 
-1. Dossier du jeu : le dossier CUSA06810 extrait, pas un PKG.
-2. Mise à jour : le dossier de mise à jour extrait, seulement si vous en avez une.
-
-Aucun des deux n'est modifié. La mise à jour est posée sur le jeu dans une vue temporaire à chaque démarrage. La version Linux vise le jeu de base, CUSA06810, sans mise à jour : laissez Mise à jour vide, sauf pour en essayer une.
+Dossier du jeu : le dossier CUSA06810 extrait, pas un PKG. Il n'est pas modifié. Comme la version Linux, Ravn lance le jeu de base : aucune mise à jour n'est nécessaire.
 
 ## Jouer
 

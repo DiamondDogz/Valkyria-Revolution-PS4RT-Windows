@@ -142,7 +142,6 @@
         <p class="muted" id="paths-hint"></p>
         <div class="grid">
           <label><span id="game-label">Game folder</span><span class="row"><input id="game" /><button type="button" class="text-btn" id="pick-game">Browse</button></span></label>
-          <label><span id="update-label">Update</span><span class="row"><input id="update" /><button type="button" class="text-btn" id="pick-update">Browse</button></span></label>
         </div>
       </div>
       <div id="trophies" class="panel wide" hidden>
@@ -165,7 +164,7 @@
   </main>
   <audio id="audio" loop></audio>
   <script>
-    const state = { settings: {}, paths: { game: "", update: "" }, languages: ["en"], media: {}, trophies: null };
+    const state = { settings: {}, paths: { game: "" }, languages: ["en"], media: {}, trophies: null };
     const grades = {
       en: { Platinum: "Platinum", Gold: "Gold", Silver: "Silver", Bronze: "Bronze" },
       fr: { Platinum: "Platine", Gold: "Or", Silver: "Argent", Bronze: "Bronze" },
@@ -185,8 +184,8 @@
       en: {
         home: "Home", settings: "Settings", paths: "Paths", theme: "Theme", language: "Language",
         ready: "Ready", play: "Play", settingsTitle: "Build settings", pathsTitle: "Paths",
-        pathsHint: "Both are extracted folders with eboot.bin and sce_sys. The update is optional; neither folder is changed.",
-        game: "Game folder", update: "Update", browse: "Browse", chooseFolder: "Choose folder", remove: "Remove",
+        pathsHint: "Your extracted CUSA06810 folder, with eboot.bin and sce_sys. It is not changed.",
+        game: "Game folder", browse: "Browse", chooseFolder: "Choose folder", remove: "Remove",
         output: "Output", window: "Window", windowed: "Windowed", borderless: "Borderless", fullscreen: "Fullscreen",
         upscaling: "Upscaling / anti-aliasing", upscaleOff: "Off / Original", aniso: "Anisotropic filtering, on restart", gameDefault: "Game default", sharpness: "Sharpening",
         upscaleHint: "The game renders 1080p; FSR rebuilds it at the output size. FSR 4 needs a recent GPU and falls back to FSR 3.1.",
@@ -195,7 +194,6 @@
         "picker-unavailable": "The Windows picker is not available here.",
         "no-pkg": "No .pkg in this folder.",
         "need-game": "Choose the game folder first.",
-        "missing-update": "That update folder has no eboot.bin.",
         "already-running": "The game is already running.",
         "missing-game": "That game folder has no eboot.bin.",
         trophies: "Trophies", trophyHint: "Read from your trophy00.trp. Nothing is sent.",
@@ -206,8 +204,8 @@
       fr: {
         home: "Accueil", settings: "Réglages", paths: "Chemins", theme: "Thème", language: "Langue",
         ready: "Prêt", play: "Jouer", settingsTitle: "Réglages du build", pathsTitle: "Chemins",
-        pathsHint: "Deux dossiers extraits, avec eboot.bin et sce_sys. La mise à jour est facultative ; aucun des deux n'est modifié.",
-        game: "Dossier du jeu", update: "Mise à jour", browse: "Parcourir", chooseFolder: "Choisir le dossier", remove: "Retirer",
+        pathsHint: "Ton dossier CUSA06810 extrait, avec eboot.bin et sce_sys. Il n'est pas modifié.",
+        game: "Dossier du jeu", browse: "Parcourir", chooseFolder: "Choisir le dossier", remove: "Retirer",
         output: "Sortie", window: "Fenêtre", windowed: "Fenêtré", borderless: "Sans bordure", fullscreen: "Plein écran",
         upscaling: "Upscaling / anticrénelage", upscaleOff: "Désactivé / Original", aniso: "Filtrage anisotrope, au redémarrage", gameDefault: "Défaut du jeu", sharpness: "Netteté",
         upscaleHint: "Le jeu calcule l'image en 1080p ; FSR la reconstruit à la taille de sortie. FSR 4 demande un GPU récent et se replie sur FSR 3.1.",
@@ -216,7 +214,6 @@
         "picker-unavailable": "Le sélecteur Windows n'est pas disponible ici.",
         "no-pkg": "Aucun .pkg dans ce dossier.",
         "need-game": "Choisis d'abord le dossier du jeu.",
-        "missing-update": "Ce dossier de mise à jour n'a pas d'eboot.bin.",
         "already-running": "Le jeu tourne déjà.",
         "missing-game": "Ce dossier de jeu n'a pas d'eboot.bin.",
         trophies: "Trophées", trophyHint: "Lu dans ton trophy00.trp. Rien n'est envoyé.",
@@ -262,8 +259,6 @@
       }
       document.querySelector("#game").value = state.paths.game || "";
       document.querySelector("#game").title = state.paths.game || "";
-      document.querySelector("#update").value = state.paths.update || "";
-      document.querySelector("#update").title = state.paths.update || "";
       document.querySelector("#ready").textContent = t("ready");
       document.querySelector("#play-label").textContent = t("play");
       document.querySelector("#play").setAttribute("aria-label", t("play"));
@@ -271,9 +266,7 @@
       document.querySelector("#paths-title").textContent = t("pathsTitle");
       document.querySelector("#paths-hint").textContent = t("pathsHint");
       document.querySelector("#game-label").textContent = t("game");
-      document.querySelector("#update-label").textContent = t("update");
       document.querySelector("#pick-game").textContent = t("browse");
-      document.querySelector("#pick-update").textContent = t("browse");
       document.querySelector("#home").setAttribute("aria-label", t("home"));
       document.querySelector("#open-settings").setAttribute("aria-label", t("settings"));
       document.querySelector("#open-paths").setAttribute("aria-label", t("paths"));
@@ -463,9 +456,7 @@
     setInterval(watchTrophies, 1000);
 
     document.querySelector("#pick-game").addEventListener("click", () => pick("game"));
-    document.querySelector("#pick-update").addEventListener("click", () => pick("update"));
     document.querySelector("#game").addEventListener("change", (event) => { state.paths.game = event.target.value; save(); });
-    document.querySelector("#update").addEventListener("change", (event) => { state.paths.update = event.target.value; save(); });
     document.querySelector("#music").addEventListener("click", async () => {
       if (!audio.src) return;
       audio.muted = false;

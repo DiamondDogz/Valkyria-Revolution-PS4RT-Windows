@@ -66,7 +66,7 @@ DEFAULT = {
         "musicVolume": 0.55,
         "gameLang": "",
     },
-    "paths": {"game": "", "update": ""},
+    "paths": {"game": ""},
 }
 
 
@@ -77,7 +77,6 @@ def load_state():
         state["settings"].update(saved.get("settings") or {})
         paths = saved.get("paths") or {}
         state["paths"]["game"] = str(paths.get("game") or "")
-        state["paths"]["update"] = str(paths.get("update") or "")
     except (OSError, json.JSONDecodeError, AttributeError):
         pass
     # The in-game menu writes the same ps4rt.ini: what it holds now is what the launcher shows.
@@ -172,7 +171,6 @@ def browse(kind):
         raise RuntimeError("picker-unavailable")
     title = {
         "game": "Extracted CUSA06810 folder (eboot.bin, sce_sys)",
-        "update": "Extracted update folder (eboot.bin, sce_sys)",
     }.get(kind)
     if not title:
         raise RuntimeError("picker-unavailable")
@@ -193,12 +191,11 @@ def console_python():
     return str(exe)
 
 
-def trophy_file(game, update=""):
-    for folder in (update, game):
-        if folder:
-            candidate = Path(folder) / "sce_sys" / "trophy" / "trophy00.trp"
-            if candidate.is_file():
-                return candidate
+def trophy_file(game):
+    if game:
+        candidate = Path(game) / "sce_sys" / "trophy" / "trophy00.trp"
+        if candidate.is_file():
+            return candidate
     return None
 
 
@@ -214,7 +211,7 @@ def trophy_catalog(trp):
 
 def available_languages(paths):
     """The game languages this folder can show: those its trophy file carries, in our list."""
-    trp = trophy_file(paths.get("game"), paths.get("update")) if read_trp else None
+    trp = trophy_file(paths.get("game")) if read_trp else None
     if not trp:
         return ["en"]
     try:
@@ -231,7 +228,7 @@ def user_dir():
 def trophy_view(paths):
     if not read_trp:
         raise RuntimeError("missing-trp")
-    trp = trophy_file(paths.get("game"), paths.get("update"))
+    trp = trophy_file(paths.get("game"))
     if not trp:
         raise RuntimeError("missing-trp")
     catalog = trophy_catalog(trp)
@@ -255,21 +252,14 @@ def launch(state):
         raise RuntimeError("need-game")
     if not (Path(game) / "eboot.bin").is_file():
         raise RuntimeError("missing-game")
-    update = str(state["paths"].get("update") or "").strip()
-    # The game folder entered again as its own update means no update.
-    if update and os.path.normcase(os.path.realpath(update)) == os.path.normcase(os.path.realpath(game)):
-        update = ""
-    if update and not (Path(update) / "eboot.bin").is_file():
-        raise RuntimeError("missing-update")
     if PROCESS["handle"] is not None and PROCESS["handle"].poll() is None:
         raise RuntimeError("already-running")
     write_ini(state["settings"])
     save_state(state)
     env = dict(os.environ)
     env["PS4RT_GAME_DIR"] = game
+    # The Linux release runs the base game only: no update is laid over it.
     env.pop("PS4RT_PATCH_DIR", None)
-    if update:
-        env["PS4RT_PATCH_DIR"] = update
     env["PS4RT_DATA_DIR"] = str(ROOT)
     env["PS4RT_CONFIG"] = str(CONFIG)
     # As scripts/valkyria_launch.py: ps4rt.ini chooses the upscaler (run.py would force it off),
@@ -287,7 +277,7 @@ def launch(state):
     env["PS4RT_LANGUAGE"] = str(GAME_LANGUAGES.get(lang, 1))
     env["PS4RT_TROPHY_LANG"] = lang
     env["PS4RT_TROPHY_FILE"] = str(user_dir() / "trophies.json")
-    trp = trophy_file(game, update)
+    trp = trophy_file(game)
     if trp and write_card_cache:
         # The in-game card reads its names and icons from this local cache, in the chosen language.
         try:
@@ -385,7 +375,7 @@ class Handler(BaseHTTPRequestHandler):
                     if isinstance(payload.get("settings"), dict):
                         state["settings"].update(payload["settings"])
                     if isinstance(payload.get("paths"), dict):
-                        state["paths"].update(payload["paths"])
+                        state["paths"]["game"] = str(payload["paths"].get("game") or "")
                     save_state(state)
                     self.send_json(200, state)
                     return

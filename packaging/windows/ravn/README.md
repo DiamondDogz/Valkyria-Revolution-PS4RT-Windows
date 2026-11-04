@@ -13,7 +13,6 @@ Version française : [README.fr.md](README.fr.md).
 1. Windows 10 or 11, x86-64, with Microsoft Edge WebView2.
 2. A graphics card with a current Vulkan driver.
 3. Your own extracted copy of Valkyria Revolution, CUSA06810: the folder with `eboot.bin`, `sce_sys` and `sce_module`.
-4. Optional: your own extracted update folder.
 
 The details are in [INSTALL.md](INSTALL.md).
 
@@ -21,7 +20,7 @@ The details are in [INSTALL.md](INSTALL.md).
 
 `Ravn.exe` opens the launcher. It does not open your browser.
 
-- Paths: the game folder, and the update folder if you have one. Neither folder is changed.
+- Paths: your game folder, the base game CUSA06810 as the Linux release runs it. It is not changed. No update is needed.
 - Settings: the ones of the Linux release's in-game menu. Output resolution, window, upscaling (Off / Original, FSR 3.1, FSR 4 v07), anisotropic filtering and sharpening. The game renders its 1080p scene at its own frame rate and FSR rebuilds it at the output size; FSR 4 needs a recent GPU and falls back to FSR 3.1. The settings are written to `ps4rt.ini`, the file the in-game menu uses, so a change made in game shows here too.
 - Trophies: read from `trophy00.trp` in your game folder. Nothing is sent. The panel shows your progress and can sort by game order, earned first or grade. When the game earns one, a card shows for a few seconds and does not take the controller. Trophies are in the language of your game edition.
 - EN/FR: the launcher's own language.
