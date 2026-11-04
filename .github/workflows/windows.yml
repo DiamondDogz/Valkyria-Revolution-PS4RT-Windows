@@ -67,6 +67,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Build Ravn.exe
+        timeout-minutes: 15
         run: bash packaging/windows/build_ravn.sh
 
       # A Windows CPython only installs the Pillow and iced-x86 wheels into the embedded Python.
@@ -76,6 +77,7 @@ jobs:
           python-version: "3.12"
 
       - name: Package
+        timeout-minutes: 20
         env:
           WINPYTHON_WIN: ${{ steps.winpython.outputs.python-path }}
           RAVN_VERSION: ${{ github.ref_name == 'main' && 'dev' || format('test-{0}', github.run_number) }}

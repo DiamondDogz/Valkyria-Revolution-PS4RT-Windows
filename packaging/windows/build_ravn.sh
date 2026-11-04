@@ -4,6 +4,10 @@
 #   webview (MIT, https://github.com/webview/webview) at WEBVIEW_REF
 #   Microsoft.Web.WebView2 (NuGet) at WEBVIEW2_VERSION, for WebView2.h and EventToken.h
 set -euo pipefail
+# CI has no terminal: never let git or unzip wait for an answer, and trace each command.
+export GIT_TERMINAL_PROMPT=0
+exec </dev/null
+set -x
 cd -- "$(dirname -- "$0")/../.."
 source ./msys2-env.sh
 WEBVIEW_REF=${WEBVIEW_REF:-0.12.0}
@@ -11,13 +15,13 @@ WEBVIEW2_VERSION=${WEBVIEW2_VERSION:-1.0.3179.45}
 mkdir -p out
 if [[ ! -f out/webview/core/include/webview/webview.h ]]; then
     rm -rf out/webview
-    git clone -q --depth 1 --branch "$WEBVIEW_REF" https://github.com/webview/webview out/webview ||
-        git clone -q --depth 1 https://github.com/webview/webview out/webview
+    timeout 600 git clone -q --depth 1 --branch "$WEBVIEW_REF" https://github.com/webview/webview out/webview ||
+        timeout 600 git clone -q --depth 1 https://github.com/webview/webview out/webview
 fi
 if [[ ! -f out/webview2/build/native/include/WebView2.h ]]; then
     rm -rf out/webview2 && mkdir -p out/webview2
-    curl -fsSL -o out/webview2.nupkg "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/$WEBVIEW2_VERSION"
-    (cd out/webview2 && unzip -q ../webview2.nupkg)
+    curl -fsSL --retry 3 --max-time 300 -o out/webview2.nupkg "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/$WEBVIEW2_VERSION"
+    (cd out/webview2 && unzip -o -q ../webview2.nupkg 'build/native/include/*')
 fi
 [[ -f out/webview2/build/native/include/EventToken.h ]] || { echo 'EventToken.h is missing from the WebView2 package' >&2; exit 1; }
 llvm-windres -I launcher/ravn launcher/ravn/ravn.rc -O coff -o out/ravn-icon.o

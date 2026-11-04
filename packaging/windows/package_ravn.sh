@@ -6,6 +6,8 @@
 #   WINPYTHON       a Windows CPython 3.12 used only to install the wheels (pip --target)
 #   PYTHON_VERSION  the python.org embeddable package to bundle (3.12.x, same minor as WINPYTHON)
 set -euo pipefail
+exec </dev/null
+set -x
 cd -- "$(dirname -- "$0")/../.."
 source ./msys2-env.sh
 version=${RAVN_VERSION:-dev}
@@ -61,8 +63,8 @@ if [[ -d $clang64/share/licenses ]]; then
 fi
 
 # Embedded Python: the python.org package, its path file pointed at the scripts and the wheels.
-curl -fsSL -o out/python-embed.zip "https://www.python.org/ftp/python/$python_version/python-$python_version-embed-amd64.zip"
-(cd "$dest/python" && unzip -q ../../../python-embed.zip)
+curl -fsSL --retry 3 --max-time 300 -o out/python-embed.zip "https://www.python.org/ftp/python/$python_version/python-$python_version-embed-amd64.zip"
+(cd "$dest/python" && unzip -o -q ../../../python-embed.zip)
 pth=$(ls "$dest"/python/python3*._pth)
 printf 'python312.zip\n.\nLib\\site-packages\n..\\scripts\n' > "$pth"
 "$WINPYTHON" -m pip install -q --disable-pip-version-check --no-compile \
