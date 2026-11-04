@@ -23,7 +23,18 @@ if [[ ! -f out/webview2/build/native/include/WebView2.h ]]; then
     curl -fsSL --retry 3 --max-time 300 -o out/webview2.nupkg "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/$WEBVIEW2_VERSION"
     (cd out/webview2 && unzip -o -q ../webview2.nupkg 'build/native/include/*')
 fi
-[[ -f out/webview2/build/native/include/EventToken.h ]] || { echo 'EventToken.h is missing from the WebView2 package' >&2; exit 1; }
+# WebView2.h includes EventToken.h, a Windows SDK header that the NuGet package does not carry.
+# Use the MinGW-w64 one when the toolchain has it, else declare the one struct it holds.
+if [[ ! -f out/webview2/build/native/include/EventToken.h ]]; then
+    cat > out/webview2/build/native/include/EventToken.h <<'HDR'
+#pragma once
+#if defined(__has_include_next) && __has_include_next(<eventtoken.h>)
+#include_next <eventtoken.h>
+#else
+typedef struct EventRegistrationToken { __int64 value; } EventRegistrationToken;
+#endif
+HDR
+fi
 llvm-windres -I launcher/ravn launcher/ravn/ravn.rc -O coff -o out/ravn-icon.o
 clang++ -std=c++17 -O2 -static -mwindows \
     -Iout/webview/core/include -Iout/webview2/build/native/include \
