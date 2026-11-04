@@ -63,7 +63,8 @@ if [[ -d $clang64/share/licenses ]]; then
 fi
 
 # Embedded Python: the python.org package, its path file pointed at the scripts and the wheels.
-curl -fsSL --retry 3 --max-time 300 -o out/python-embed.zip "https://www.python.org/ftp/python/$python_version/python-$python_version-embed-amd64.zip"
+[[ -f out/python-embed.zip ]] ||
+    curl -fsSL --retry 3 --max-time 300 -o out/python-embed.zip "https://www.python.org/ftp/python/$python_version/python-$python_version-embed-amd64.zip"
 (cd "$dest/python" && unzip -o -q ../../../python-embed.zip)
 pth=$(ls "$dest"/python/python3*._pth)
 printf 'python312.zip\n.\nLib\\site-packages\n..\\scripts\n' > "$pth"

@@ -66,6 +66,22 @@ jobs:
           path: out/gpu-build.log
           if-no-files-found: ignore
 
+      # git and curl inside MSYS2 have hung on this runner, so the two header-only sources of
+      # Ravn.exe are fetched here; build_ravn.sh skips its own download when they are present.
+      - uses: actions/checkout@v4
+        with:
+          repository: webview/webview
+          ref: "0.12.0"
+          path: out/webview
+
+      - name: WebView2 headers
+        shell: pwsh
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/1.0.3179.45 -OutFile out/webview2.zip -TimeoutSec 300
+          Expand-Archive out/webview2.zip -DestinationPath out/webview2 -Force
+          Get-ChildItem out/webview2/build/native/include
+
       - name: Build Ravn.exe
         timeout-minutes: 15
         run: bash packaging/windows/build_ravn.sh
@@ -75,6 +91,12 @@ jobs:
         id: winpython
         with:
           python-version: "3.12"
+
+      - name: Embeddable Python
+        shell: pwsh
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip -OutFile out/python-embed.zip -TimeoutSec 300
 
       - name: Package
         timeout-minutes: 20
