@@ -20,7 +20,7 @@ Le détail est dans [INSTALL.md](INSTALL.md).
 `Ravn.exe` ouvre le lanceur. Il n'ouvre pas le navigateur.
 
 - Chemins : le dossier du jeu, et le dossier de mise à jour si vous en avez un. Aucun des deux n'est modifié.
-- Réglages : sortie, fenêtre, résolution de rendu, cadence maximale, filtrage anisotrope, netteté. Ils sont écrits dans `ps4rt.ini`, le fichier du menu en jeu : un changement fait en jeu se retrouve ici.
+- Réglages : sortie, fenêtre, limite à 30 ou 60 images par seconde, filtrage anisotrope, netteté. Le jeu dessine sa propre scène en 1080p à son propre rythme : il n'existe pas encore de patch de résolution ou de cadence pour lui. Ils sont écrits dans `ps4rt.ini`, le fichier du menu en jeu : un changement fait en jeu se retrouve ici.
 - Trophées : lus dans le `trophy00.trp` de votre dossier de jeu. Rien n'est envoyé. Quand le jeu en obtient un, une carte s'affiche quelques secondes, sans prendre la manette.
 - Le bouton globe : la langue du jeu. Seules les langues présentes dans votre dossier de jeu sont proposées.
 - EN/FR : la langue du lanceur lui-même.

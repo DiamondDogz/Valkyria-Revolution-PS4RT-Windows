@@ -164,7 +164,7 @@
         game: "Game folder", update: "Update", browse: "Browse", chooseFolder: "Choose folder", remove: "Remove",
         output: "Output", window: "Window", windowed: "Windowed", borderless: "Borderless", fullscreen: "Fullscreen",
         render: "Render resolution", nativeRes: "Native",
-        rate: "Frame rate ceiling", aniso: "Anisotropic, on restart", gameDefault: "Game", sharpness: "Sharpness",
+        rate: "Frame rate limit", aniso: "Anisotropic, on restart", gameDefault: "Game", sharpness: "Sharpness",
         pickerOpen: "Picker open.", pickFail: "Could not select.",
         launching: "The game is starting. The log opens separately.", launchFail: "Could not start.",
         "picker-unavailable": "The Windows picker is not available here.",
@@ -185,7 +185,7 @@
         game: "Dossier du jeu", update: "Mise à jour", browse: "Parcourir", chooseFolder: "Choisir le dossier", remove: "Retirer",
         output: "Sortie", window: "Fenêtre", windowed: "Fenêtré", borderless: "Sans bordure", fullscreen: "Plein écran",
         render: "Résolution de rendu", nativeRes: "Native",
-        rate: "Cadence maximale", aniso: "Anisotrope, au redémarrage", gameDefault: "Jeu", sharpness: "Netteté",
+        rate: "Limite d'images par seconde", aniso: "Anisotrope, au redémarrage", gameDefault: "Jeu", sharpness: "Netteté",
         pickerOpen: "Sélecteur ouvert.", pickFail: "Sélection impossible.",
         launching: "Le jeu démarre. Le journal s'ouvre à part.", launchFail: "Lancement impossible.",
         "picker-unavailable": "Le sélecteur Windows n'est pas disponible ici.",
@@ -263,8 +263,7 @@
       grid.replaceChildren(
         choices(t("output"), state.settings.outputRes, [{ id: "1920x1080", label: "1920 × 1080" }, { id: "2560x1440", label: "2560 × 1440" }, { id: "3840x2160", label: "3840 × 2160" }], (id) => patch({ outputRes: id })),
         choices(t("window"), state.settings.displayMode, [{ id: "windowed", label: t("windowed") }, { id: "borderless", label: t("borderless") }, { id: "fullscreen", label: t("fullscreen") }], (id) => patch({ displayMode: id })),
-        choices(t("render"), state.settings.renderResolution, [{ id: "native", label: t("nativeRes") }, { id: "720p", label: "720p" }, { id: "1440p", label: "1440p" }, { id: "1800p", label: "1800p" }, { id: "4K", label: "4K" }], (id) => patch({ renderResolution: id })),
-        choices(t("rate"), state.settings.engineFps, [60, 120, 240].map((n) => ({ id: String(n), label: String(n) })), (id) => patch({ engineFps: Number(id) })),
+        choices(t("rate"), state.settings.fpsLimit, [30, 60].map((n) => ({ id: String(n), label: String(n) })), (id) => patch({ fpsLimit: Number(id) })),
         choices(t("aniso"), state.settings.anisotropy, [0, 2, 4, 8, 16].map((n) => ({ id: String(n), label: n ? n + "×" : t("gameDefault") })), (id) => patch({ anisotropy: Number(id) }))
       );
       const sharpLabel = document.createElement("label");

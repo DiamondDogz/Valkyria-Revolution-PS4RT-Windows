@@ -49,8 +49,9 @@ TROPHY_CACHE = {"path": "", "stamp": 0.0, "catalog": None}
 # ps4rt.ini values (gpu/shim/ps4rt_settings.cpp, ps4rt_graphics.h).
 OUTPUTS = ("1920x1080", "2560x1440", "3840x2160")
 DISPLAY_MODES = ("windowed", "borderless", "fullscreen")
-RENDER_RESOLUTIONS = ("native", "720p", "1440p", "1800p", "4K")
-ENGINE_FPS = (60, 120, 240)
+# Valkyria has no resolution or frame rate patch (scripts/patches.py GAMES is empty): the game
+# renders its own 1080p scene at its own rate, so the launcher only offers a present limit.
+FPS_LIMITS = (30, 60)
 ANISOTROPY = (0, 2, 4, 8, 16)
 # PS4 system language numbers the runtime returns to the game (PS4RT_LANGUAGE).
 GAME_LANGUAGES = {"en": 1, "ja": 0, "fr": 2, "es": 3, "de": 4, "it": 5, "zh-Hant": 10, "ko": 9}
@@ -59,8 +60,7 @@ DEFAULT = {
     "settings": {
         "outputRes": "1920x1080",
         "displayMode": "windowed",
-        "renderResolution": "native",
-        "engineFps": 120,
+        "fpsLimit": 60,
         "anisotropy": 0,
         "sharpness": 0,
         "musicVolume": 0.55,
@@ -91,9 +91,7 @@ def settings_from_ini(ini):
         found["outputRes"] = ini["output_res"]
     if ini.get("display_mode") in DISPLAY_MODES:
         found["displayMode"] = ini["display_mode"]
-    if ini.get("render_resolution") in RENDER_RESOLUTIONS:
-        found["renderResolution"] = ini["render_resolution"]
-    for key, name, allowed in (("engine_fps", "engineFps", ENGINE_FPS), ("anisotropy", "anisotropy", ANISOTROPY)):
+    for key, name, allowed in (("fps_limit", "fpsLimit", FPS_LIMITS), ("anisotropy", "anisotropy", ANISOTROPY)):
         try:
             if int(ini.get(key, "")) in allowed:
                 found[name] = int(ini[key])
@@ -122,9 +120,9 @@ def pick(value, allowed, default):
 def ini_updates(settings):
     """Only the keys the launcher shows. The rest of ps4rt.ini (in-game choices) is kept."""
     try:
-        fps = int(settings.get("engineFps") or 120)
+        fps = int(settings.get("fpsLimit") or 60)
     except (TypeError, ValueError):
-        fps = 120
+        fps = 60
     try:
         aniso = int(settings.get("anisotropy") or 0)
     except (TypeError, ValueError):
@@ -136,8 +134,9 @@ def ini_updates(settings):
     return {
         "output_res": pick(settings.get("outputRes"), OUTPUTS, "1920x1080"),
         "display_mode": pick(settings.get("displayMode"), DISPLAY_MODES, "windowed"),
-        "render_resolution": pick(settings.get("renderResolution"), RENDER_RESOLUTIONS, "native"),
-        "engine_fps": str(pick(fps, ENGINE_FPS, 120)),
+        "render_resolution": "native",
+        "engine_fps": "60",
+        "fps_limit": str(pick(fps, FPS_LIMITS, 60)),
         "anisotropy": str(pick(aniso, ANISOTROPY, 0)),
         "sharpen": "1" if sharp > 0 else "0",
         "sharpness": "{:.2f}".format(sharp),
