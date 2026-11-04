@@ -24,7 +24,7 @@ This project does not provide the game, keys, firmware, or saves.
 1. Game folder: the extracted CUSA06810 directory, not a PKG.
 2. Update: the extracted update folder, only if you have one.
 
-Neither folder is changed. The update is laid over the game in a temporary view at each start.
+Neither folder is changed. The update is laid over the game in a temporary view at each start. The Linux release targets the base game, CUSA06810, without an update: leave Update empty unless you want to try one.
 
 ## Play
 
@@ -66,7 +66,7 @@ Ce projet ne fournit ni le jeu, ni clés, ni firmware, ni sauvegardes.
 1. Dossier du jeu : le dossier CUSA06810 extrait, pas un PKG.
 2. Mise à jour : le dossier de mise à jour extrait, seulement si vous en avez une.
 
-Aucun des deux n'est modifié. La mise à jour est posée sur le jeu dans une vue temporaire à chaque démarrage.
+Aucun des deux n'est modifié. La mise à jour est posée sur le jeu dans une vue temporaire à chaque démarrage. La version Linux vise le jeu de base, CUSA06810, sans mise à jour : laissez Mise à jour vide, sauf pour en essayer une.
 
 ## Jouer
 

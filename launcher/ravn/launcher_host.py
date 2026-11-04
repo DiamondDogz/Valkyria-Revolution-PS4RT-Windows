@@ -49,9 +49,9 @@ TROPHY_CACHE = {"path": "", "stamp": 0.0, "catalog": None}
 # ps4rt.ini values (gpu/shim/ps4rt_settings.cpp, ps4rt_graphics.h).
 OUTPUTS = ("1920x1080", "2560x1440", "3840x2160")
 DISPLAY_MODES = ("windowed", "borderless", "fullscreen")
-# Valkyria has no resolution or frame rate patch (scripts/patches.py GAMES is empty): the game
-# renders its own 1080p scene at its own rate, so the launcher only offers a present limit.
-FPS_LIMITS = (30, 60)
+# The choices of the Linux release's in-game graphics menu (ps4rt_overlay.cpp ValkyriaGraphics):
+# the game renders its own 1080p scene, FSR (or the original image) brings it to the output.
+UPSCALERS = ("off", "fsr3", "fsr4")
 ANISOTROPY = (0, 2, 4, 8, 16)
 # PS4 system language numbers the runtime returns to the game (PS4RT_LANGUAGE).
 GAME_LANGUAGES = {"en": 1, "ja": 0, "fr": 2, "es": 3, "de": 4, "it": 5, "zh-Hant": 10, "ko": 9}
@@ -60,9 +60,9 @@ DEFAULT = {
     "settings": {
         "outputRes": "1920x1080",
         "displayMode": "windowed",
-        "fpsLimit": 60,
+        "upscaler": "fsr3",
         "anisotropy": 0,
-        "sharpness": 0,
+        "sharpness": 0.3,
         "musicVolume": 0.55,
         "gameLang": "",
     },
@@ -91,7 +91,9 @@ def settings_from_ini(ini):
         found["outputRes"] = ini["output_res"]
     if ini.get("display_mode") in DISPLAY_MODES:
         found["displayMode"] = ini["display_mode"]
-    for key, name, allowed in (("fps_limit", "fpsLimit", FPS_LIMITS), ("anisotropy", "anisotropy", ANISOTROPY)):
+    if ini.get("upscaler") in UPSCALERS:
+        found["upscaler"] = ini["upscaler"]
+    for key, name, allowed in (("anisotropy", "anisotropy", ANISOTROPY),):
         try:
             if int(ini.get(key, "")) in allowed:
                 found[name] = int(ini[key])
@@ -120,10 +122,6 @@ def pick(value, allowed, default):
 def ini_updates(settings):
     """Only the keys the launcher shows. The rest of ps4rt.ini (in-game choices) is kept."""
     try:
-        fps = int(settings.get("fpsLimit") or 60)
-    except (TypeError, ValueError):
-        fps = 60
-    try:
         aniso = int(settings.get("anisotropy") or 0)
     except (TypeError, ValueError):
         aniso = 0
@@ -131,15 +129,21 @@ def ini_updates(settings):
         sharp = max(0.0, min(1.0, float(settings.get("sharpness") or 0)))
     except (TypeError, ValueError):
         sharp = 0.0
+    upscaler = pick(settings.get("upscaler"), UPSCALERS, "fsr3")
     return {
         "output_res": pick(settings.get("outputRes"), OUTPUTS, "1920x1080"),
         "display_mode": pick(settings.get("displayMode"), DISPLAY_MODES, "windowed"),
-        "render_resolution": "native",
-        "engine_fps": "60",
-        "fps_limit": str(pick(fps, FPS_LIMITS, 60)),
+        "upscaler": upscaler,
         "anisotropy": str(pick(aniso, ANISOTROPY, 0)),
         "sharpen": "1" if sharp > 0 else "0",
         "sharpness": "{:.2f}".format(sharp),
+        # As the in-game menu: the original image is sharpened by RCAS, FSR sharpens itself.
+        "rcas": "1" if upscaler == "off" and sharp > 0 else "0",
+        "rcas_strength": str(int(round(sharp * 100))),
+        # Earlier Ravn tests wrote these; the Linux release leaves them at the runtime defaults.
+        "render_resolution": "native",
+        "engine_fps": "60",
+        "fps_limit": "0",
     }
 
 
@@ -241,7 +245,7 @@ def trophy_view(paths):
             icon = "data:image/png;base64," + base64.b64encode(item["icon"]).decode("ascii")
         rows.append({"id": trophy_id, "grade": item["grade"], "hidden": item["hidden"],
                      "icon": icon, "text": item["text"], "when": unlocked})
-    rows.sort(key=lambda row: (bool(row["when"]), row["when"]), reverse=True)
+    # Game order; the page sorts (game order, earned first, by grade).
     return {"languages": catalog["languages"], "trophies": rows}
 
 
@@ -268,8 +272,17 @@ def launch(state):
         env["PS4RT_PATCH_DIR"] = update
     env["PS4RT_DATA_DIR"] = str(ROOT)
     env["PS4RT_CONFIG"] = str(CONFIG)
-    # Temporal upscaling is not calibrated for this game (run.py); it stays off here.
-    env["PS4RT_EXPERIMENTAL_UPSCALER"] = "0"
+    # As scripts/valkyria_launch.py: ps4rt.ini chooses the upscaler (run.py would force it off),
+    # FSR 4 reads its passes from fsr4_shaders, and an overlay portrait and menu sounds the
+    # player puts in gpu/assets are used (none ship with Ravn).
+    env["PS4RT_EXPERIMENTAL_UPSCALER"] = "1"
+    env.setdefault("PS4RT_FSR4_DIR", str(ROOT / "fsr4_shaders"))
+    art = ROOT / "gpu" / "assets" / "valkyria_overlay.png"
+    if art.is_file():
+        env.setdefault("PS4RT_OVERLAY_BACKGROUND", str(art))
+    sounds = ROOT / "gpu" / "assets" / "sounds"
+    if sounds.is_dir():
+        env.setdefault("PS4RT_MENU_SOUND_DIR", str(sounds))
     lang = game_language(state["settings"], available_languages(state["paths"]))
     env["PS4RT_LANGUAGE"] = str(GAME_LANGUAGES.get(lang, 1))
     env["PS4RT_TROPHY_LANG"] = lang

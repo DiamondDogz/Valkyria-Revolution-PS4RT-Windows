@@ -13,6 +13,7 @@
       --muted: #b7b1a8;
       --gold: #f0c400;
       --line: #2a2a2a;
+      --platinum: #b9d3e8; --gold-grade: #e9b949; --silver: #c3c8cf; --bronze: #c98552;
       --ui: 1;
       font-family: "Segoe UI", sans-serif;
     }
@@ -72,10 +73,30 @@
     }
     input[type="range"] { width: 100%; accent-color: var(--gold); }
     .panel.wide { left: 0; width: auto; }
-    .trophy { display: grid; grid-template-columns: 3rem 1fr auto minmax(8rem, 34%); gap: 0.6rem; align-items: center; width: 100%; min-height: 4.2rem; margin-top: 0.4rem; border: 0; border-radius: 0.7rem; background: #161616; color: var(--paper); text-align: left; padding: 0.4rem 0.6rem; }
-    .trophy img { width: 3rem; height: 3rem; object-fit: cover; background: #0c0c0c; }
-    .trophy b { display: block; }
-    .trophy small { color: var(--muted); }
+    .tro-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+    .tro-head h2 { margin: 0 0 0.3rem; }
+    .tro-head p { margin: 0; font-size: 0.85rem; }
+    .tro-stats { display: flex; align-items: center; gap: 1.1rem; }
+    .tro-stats > svg { width: 2.4rem; height: 2.4rem; color: var(--paper); }
+    .stat small { display: block; font-size: 0.72rem; color: var(--muted); }
+    .stat strong { display: block; font-size: 1.35rem; font-weight: 600; line-height: 1.2; }
+    .stat.progress strong { border-bottom: 2px solid var(--paper); padding-bottom: 0.1rem; }
+    .grades { display: flex; gap: 0.7rem; align-self: flex-end; padding-bottom: 0.2rem; }
+    .grades span { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.95rem; }
+    .grades svg, .grade svg { width: 1em; height: 1em; }
+    .tro-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 1.1rem 0 0.5rem; font-size: 0.85rem; color: var(--muted); }
+    .tro-bar select { border: 0; background: transparent; color: var(--paper); font: inherit; cursor: pointer; }
+    .tro-bar select option { background: var(--ink); }
+    .trophy { display: grid; grid-template-columns: 3rem minmax(12rem, 1fr) 9.5rem minmax(10rem, 1.4fr); gap: 0.9rem; align-items: center; width: 100%; min-height: 3.9rem; margin-top: 0.45rem; border-radius: 0.55rem; background: #1a1a1a; padding: 0.45rem 0.8rem; }
+    .trophy img, .trophy .blank { width: 3rem; height: 3rem; object-fit: cover; border-radius: 0.3rem; background: #0c0c0c; }
+    .trophy b { display: block; font-size: 0.95rem; }
+    .trophy.locked b, .trophy.locked img { opacity: 0.72; }
+    .grade { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.78rem; }
+    .grade.Platinum { color: var(--platinum); } .grade.Gold { color: var(--gold-grade); }
+    .grade.Silver { color: var(--silver); } .grade.Bronze { color: var(--bronze); }
+    .when { display: inline-flex; align-items: center; gap: 0.35rem; justify-self: end; font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+    .when svg { width: 0.95em; height: 0.95em; }
+    .detail { border-left: 1px solid var(--line); padding-left: 0.9rem; font-size: 0.82rem; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -92,9 +113,6 @@
       </button>
       <button type="button" id="open-trophies" aria-label="Trophies">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4h8v3a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3M9 20h6"/></svg>
-      </button>
-      <button type="button" id="open-language" aria-label="Game language">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
       </button>
       <button type="button" id="lang" class="push text-xs" aria-label="Launcher language">EN</button>
       <button type="button" id="music" class="gold" aria-label="Theme">
@@ -127,14 +145,20 @@
           <label><span id="update-label">Update</span><span class="row"><input id="update" /><button type="button" class="text-btn" id="pick-update">Browse</button></span></label>
         </div>
       </div>
-      <div id="language" class="panel" hidden>
-        <h2 id="language-title">Game language</h2>
-        <p class="muted" id="language-hint"></p>
-        <div class="choices" id="game-langs"></div>
-      </div>
       <div id="trophies" class="panel wide" hidden>
-        <h2 id="trophies-title">Trophies</h2>
-        <p class="muted" id="trophies-hint"></p>
+        <div class="tro-head">
+          <div><h2 id="trophies-title">Trophies</h2><p class="muted" id="trophies-hint"></p></div>
+          <div class="tro-stats" id="trophy-stats" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 4h8v4a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 12v4M9 20h6M10 16h4v4h-4z"/></svg>
+            <div class="stat progress"><small id="progress-label">Progress</small><strong id="progress-value">0%</strong></div>
+            <div class="stat"><small id="earned-label">Earned</small><strong id="earned-value">0/0</strong></div>
+            <div class="grades" id="grade-counts"></div>
+          </div>
+        </div>
+        <div class="tro-bar" id="trophy-bar" hidden>
+          <span id="trophy-count"></span>
+          <label class="row"><span id="sort-label">Sort by:</span><select id="trophy-sort"></select></label>
+        </div>
         <div id="trophy-list"></div>
       </div>
     </section>
@@ -148,11 +172,12 @@
       es: { Platinum: "Platino", Gold: "Oro", Silver: "Plata", Bronze: "Bronce" },
       de: { Platinum: "Platin", Gold: "Gold", Silver: "Silber", Bronze: "Bronze" },
     };
-    // Labels for the languages a game folder can offer; the host says which ones this one has.
-    const languageNames = { en: "English", ja: "日本語", fr: "Français", de: "Deutsch", es: "Español", it: "Italiano", ko: "한국어", "zh-Hant": "繁體中文" };
-    function gameLanguages() { return (state.languages || ["en"]).map((id) => ({ id, label: languageNames[id] || id })); }
-    function knownGameLang(value) { return (state.languages || ["en"]).includes(value) ? value : ""; }
-    let trophyLang = "en";
+    // The trophy text follows the game's own language: the first one its trophy file carries.
+    function trophyLang() { return (state.languages || ["en"])[0] || "en"; }
+    let trophySort = "game";
+    const gradeOrder = { Platinum: 0, Gold: 1, Silver: 2, Bronze: 3 };
+    const cupIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10v5a5 5 0 0 1-10 0zM5 4h2v2.5A3 3 0 0 1 5 4m14 0h-2v2.5A3 3 0 0 0 19 4M11 13h2v4h3v3H8v-3h3z"/></svg>';
+    const calendarIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>';
     const panel = { name: "" };
     const audio = document.querySelector("#audio");
     const note = document.querySelector("#note");
@@ -163,8 +188,8 @@
         pathsHint: "Both are extracted folders with eboot.bin and sce_sys. The update is optional; neither folder is changed.",
         game: "Game folder", update: "Update", browse: "Browse", chooseFolder: "Choose folder", remove: "Remove",
         output: "Output", window: "Window", windowed: "Windowed", borderless: "Borderless", fullscreen: "Fullscreen",
-        render: "Render resolution", nativeRes: "Native",
-        rate: "Frame rate limit", aniso: "Anisotropic, on restart", gameDefault: "Game", sharpness: "Sharpness",
+        upscaling: "Upscaling / anti-aliasing", upscaleOff: "Off / Original", aniso: "Anisotropic filtering, on restart", gameDefault: "Game default", sharpness: "Sharpening",
+        upscaleHint: "The game renders 1080p; FSR rebuilds it at the output size. FSR 4 needs a recent GPU and falls back to FSR 3.1.",
         pickerOpen: "Picker open.", pickFail: "Could not select.",
         launching: "The game is starting. The log opens separately.", launchFail: "Could not start.",
         "picker-unavailable": "The Windows picker is not available here.",
@@ -174,9 +199,9 @@
         "already-running": "The game is already running.",
         "missing-game": "That game folder has no eboot.bin.",
         trophies: "Trophies", trophyHint: "Read from your trophy00.trp. Nothing is sent.",
-        locked: "Locked", unlocked: "Unlocked", hidden: "Hidden", missingTrp: "trophy00.trp was not found in that game folder.",
-        gameLang: "Game language", launcherLang: "Launcher language",
-        gameLangHint: "Game text and trophies, on the next Play. Only the languages your game folder carries are listed.",
+        locked: "Locked", unlocked: "Unlocked", hidden: "Hidden trophy", missingTrp: "trophy00.trp was not found in that game folder.",
+        launcherLang: "Launcher language", progress: "Progress", earned: "Earned", allTrophies: "All trophies:",
+        sortBy: "Sort by:", sortGame: "Game default", sortEarned: "Earned first", sortGrade: "Grade",
       },
       fr: {
         home: "Accueil", settings: "Réglages", paths: "Chemins", theme: "Thème", language: "Langue",
@@ -184,8 +209,8 @@
         pathsHint: "Deux dossiers extraits, avec eboot.bin et sce_sys. La mise à jour est facultative ; aucun des deux n'est modifié.",
         game: "Dossier du jeu", update: "Mise à jour", browse: "Parcourir", chooseFolder: "Choisir le dossier", remove: "Retirer",
         output: "Sortie", window: "Fenêtre", windowed: "Fenêtré", borderless: "Sans bordure", fullscreen: "Plein écran",
-        render: "Résolution de rendu", nativeRes: "Native",
-        rate: "Limite d'images par seconde", aniso: "Anisotrope, au redémarrage", gameDefault: "Jeu", sharpness: "Netteté",
+        upscaling: "Upscaling / anticrénelage", upscaleOff: "Désactivé / Original", aniso: "Filtrage anisotrope, au redémarrage", gameDefault: "Défaut du jeu", sharpness: "Netteté",
+        upscaleHint: "Le jeu calcule l'image en 1080p ; FSR la reconstruit à la taille de sortie. FSR 4 demande un GPU récent et se replie sur FSR 3.1.",
         pickerOpen: "Sélecteur ouvert.", pickFail: "Sélection impossible.",
         launching: "Le jeu démarre. Le journal s'ouvre à part.", launchFail: "Lancement impossible.",
         "picker-unavailable": "Le sélecteur Windows n'est pas disponible ici.",
@@ -195,9 +220,9 @@
         "already-running": "Le jeu tourne déjà.",
         "missing-game": "Ce dossier de jeu n'a pas d'eboot.bin.",
         trophies: "Trophées", trophyHint: "Lu dans ton trophy00.trp. Rien n'est envoyé.",
-        locked: "Fermé", unlocked: "Pris", hidden: "Caché", missingTrp: "trophy00.trp est introuvable dans ce dossier.",
-        gameLang: "Langue du jeu", launcherLang: "Langue du lanceur",
-        gameLangHint: "Textes du jeu et trophées, au prochain lancement. Seules les langues présentes dans ton dossier de jeu sont proposées.",
+        locked: "Verrouillé", unlocked: "Obtenu", hidden: "Trophée caché", missingTrp: "trophy00.trp est introuvable dans ce dossier.",
+        launcherLang: "Langue du lanceur", progress: "Progression", earned: "Obtenus", allTrophies: "Tous les trophées :",
+        sortBy: "Trier par :", sortGame: "Ordre du jeu", sortEarned: "Obtenus d'abord", sortGrade: "Rang",
       },
     };
     let lang = "en";
@@ -253,7 +278,6 @@
       document.querySelector("#open-settings").setAttribute("aria-label", t("settings"));
       document.querySelector("#open-paths").setAttribute("aria-label", t("paths"));
       document.querySelector("#open-trophies").setAttribute("aria-label", t("trophies"));
-      document.querySelector("#open-language").setAttribute("aria-label", t("gameLang"));
       document.querySelector("#lang").setAttribute("aria-label", t("launcherLang"));
       document.querySelector("#music").setAttribute("aria-label", t("theme"));
       document.querySelector("#lang").textContent = lang === "en" ? "EN" : "FR";
@@ -263,9 +287,14 @@
       grid.replaceChildren(
         choices(t("output"), state.settings.outputRes, [{ id: "1920x1080", label: "1920 × 1080" }, { id: "2560x1440", label: "2560 × 1440" }, { id: "3840x2160", label: "3840 × 2160" }], (id) => patch({ outputRes: id })),
         choices(t("window"), state.settings.displayMode, [{ id: "windowed", label: t("windowed") }, { id: "borderless", label: t("borderless") }, { id: "fullscreen", label: t("fullscreen") }], (id) => patch({ displayMode: id })),
-        choices(t("rate"), state.settings.fpsLimit, [30, 60].map((n) => ({ id: String(n), label: String(n) })), (id) => patch({ fpsLimit: Number(id) })),
+        choices(t("upscaling"), state.settings.upscaler, [{ id: "off", label: t("upscaleOff") }, { id: "fsr3", label: "FSR 3.1" }, { id: "fsr4", label: "FSR 4 v07" }], (id) => patch({ upscaler: id })),
         choices(t("aniso"), state.settings.anisotropy, [0, 2, 4, 8, 16].map((n) => ({ id: String(n), label: n ? n + "×" : t("gameDefault") })), (id) => patch({ anisotropy: Number(id) }))
       );
+      const upscaleHint = document.createElement("p");
+      upscaleHint.className = "muted";
+      upscaleHint.style.cssText = "margin: 0.5rem 0 0; font-size: 0.8rem";
+      upscaleHint.textContent = t("upscaleHint");
+      grid.children[2].appendChild(upscaleHint);
       const sharpLabel = document.createElement("label");
       sharpLabel.className = "muted";
       sharpLabel.textContent = t("sharpness") + " " + sharp + " %";
@@ -283,57 +312,90 @@
       document.querySelector("#open-settings").classList.toggle("on", panel.name === "settings");
       document.querySelector("#open-paths").classList.toggle("on", panel.name === "paths");
       document.querySelector("#open-trophies").classList.toggle("on", panel.name === "trophies");
-      document.querySelector("#open-language").classList.toggle("on", panel.name === "language");
-      document.querySelector("#language").hidden = panel.name !== "language";
-      document.querySelector("#language-title").textContent = t("gameLang");
-      document.querySelector("#language-hint").textContent = t("gameLangHint");
-      const gameLangs = document.querySelector("#game-langs");
-      gameLangs.replaceChildren();
-      gameLanguages().forEach((item) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "choice" + (item.id === trophyLang ? " on" : "");
-        button.textContent = item.label;
-        button.addEventListener("click", () => {
-          trophyLang = item.id;
-          patch({ gameLang: item.id, trophyLang: item.id });
-        });
-        gameLangs.appendChild(button);
-      });
       document.querySelector("#settings").hidden = panel.name !== "settings";
       document.querySelector("#paths").hidden = panel.name !== "paths";
       document.querySelector("#trophies").hidden = panel.name !== "trophies";
       document.querySelector("#trophies-title").textContent = t("trophies");
       document.querySelector("#trophies-hint").textContent = t("trophyHint");
-      const trophyList = document.querySelector("#trophy-list");
-      trophyList.replaceChildren();
+      renderTrophies();
+    }
+
+    function renderTrophies() {
+      const list = document.querySelector("#trophy-list");
       const file = state.trophies;
-      if (file && file.languages) {
-        const taken = file.trophies.filter((item) => item.when).length;
-        document.querySelector("#trophies-hint").textContent = t("trophyHint") + "  " + taken + " / " + file.trophies.length;
-        const words = grades[trophyLang] || grades.en;
-        file.trophies.forEach((item) => {
-          const row = document.createElement("div");
-          row.className = "trophy";
-          const img = document.createElement("img");
-          img.alt = "";
-          const main = document.createElement("span");
-          const name = document.createElement("b");
-          const grade = document.createElement("small");
-          const copyText = (item.text && (item.text[trophyLang] || item.text.en)) || { name: "", detail: "" };
-          const hidden = item.hidden && !item.when;
-          if (!hidden && item.icon) img.src = item.icon;
-          name.textContent = hidden ? t("hidden") : copyText.name;
-          grade.textContent = words[item.grade] || item.grade;
-          main.append(name, grade);
-          const when = document.createElement("small");
-          when.textContent = item.when ? item.when.replace("T", " ").replace("Z", "") : t("locked");
-          const detail = document.createElement("small");
-          detail.textContent = hidden ? "" : copyText.detail;
-          row.append(img, main, when, detail);
-          trophyList.appendChild(row);
-        });
-      }
+      const ready = Boolean(file && file.trophies);
+      document.querySelector("#trophy-stats").hidden = !ready;
+      document.querySelector("#trophy-bar").hidden = !ready;
+      list.replaceChildren();
+      if (!ready) return;
+      const items = file.trophies;
+      const taken = items.filter((item) => item.when);
+      const lng = trophyLang();
+      const words = grades[lang] || grades.en;
+      document.querySelector("#progress-label").textContent = t("progress");
+      document.querySelector("#progress-value").textContent = Math.floor((100 * taken.length) / Math.max(items.length, 1)) + "%";
+      document.querySelector("#earned-label").textContent = t("earned");
+      document.querySelector("#earned-value").textContent = taken.length + "/" + items.length;
+      const counts = document.querySelector("#grade-counts");
+      counts.replaceChildren();
+      ["Gold", "Silver", "Bronze"].forEach((name) => {
+        const span = document.createElement("span");
+        span.className = "grade " + name;
+        span.title = words[name];
+        span.innerHTML = cupIcon;
+        span.append(String(taken.filter((item) => item.grade === name).length));
+        counts.appendChild(span);
+      });
+      document.querySelector("#trophy-count").textContent = t("allTrophies") + " " + items.length;
+      document.querySelector("#sort-label").textContent = t("sortBy");
+      const select = document.querySelector("#trophy-sort");
+      select.replaceChildren(...[["game", t("sortGame")], ["earned", t("sortEarned")], ["grade", t("sortGrade")]].map(([id, label]) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = label;
+        option.selected = id === trophySort;
+        return option;
+      }));
+      const order = items.map((item, index) => ({ item, index }));
+      if (trophySort === "earned") order.sort((a, b) => (b.item.when || "").localeCompare(a.item.when || "") || a.index - b.index);
+      if (trophySort === "grade") order.sort((a, b) => (gradeOrder[a.item.grade] ?? 9) - (gradeOrder[b.item.grade] ?? 9) || a.index - b.index);
+      order.forEach(({ item }) => {
+        const row = document.createElement("div");
+        row.className = "trophy" + (item.when ? "" : " locked");
+        const text = (item.text && (item.text[lng] || item.text.en || Object.values(item.text)[0])) || { name: "", detail: "" };
+        const hidden = item.hidden && !item.when;
+        let picture;
+        if (!hidden && item.icon) {
+          picture = document.createElement("img");
+          picture.alt = "";
+          picture.src = item.icon;
+        } else {
+          picture = document.createElement("span");
+          picture.className = "blank";
+        }
+        const main = document.createElement("span");
+        const name = document.createElement("b");
+        name.textContent = hidden ? t("hidden") : text.name;
+        const grade = document.createElement("span");
+        grade.className = "grade " + item.grade;
+        grade.innerHTML = cupIcon;
+        grade.append(words[item.grade] || item.grade);
+        main.append(name, grade);
+        const when = document.createElement("span");
+        when.className = "when";
+        if (item.when) {
+          const date = new Date(item.when.replace(" ", "T"));
+          when.innerHTML = calendarIcon;
+          when.append(isNaN(date) ? item.when : date.toLocaleString(lang === "fr" ? "fr-FR" : "en-US", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }));
+        } else {
+          when.textContent = t("locked");
+        }
+        const detail = document.createElement("span");
+        detail.className = "detail";
+        detail.textContent = hidden ? "" : text.detail;
+        row.append(picture, main, when, detail);
+        list.appendChild(row);
+      });
     }
 
     async function save() {
@@ -364,7 +426,7 @@
     document.querySelector("#home").addEventListener("click", () => { panel.name = ""; render(); });
     document.querySelector("#open-settings").addEventListener("click", () => { panel.name = panel.name === "settings" ? "" : "settings"; render(); });
     document.querySelector("#open-paths").addEventListener("click", () => { panel.name = panel.name === "paths" ? "" : "paths"; render(); });
-    document.querySelector("#open-language").addEventListener("click", () => { panel.name = panel.name === "language" ? "" : "language"; render(); });
+    document.querySelector("#trophy-sort").addEventListener("change", (event) => { trophySort = event.target.value; renderTrophies(); });
     document.querySelector("#open-trophies").addEventListener("click", async () => {
       panel.name = panel.name === "trophies" ? "" : "trophies";
       render();
@@ -431,9 +493,8 @@
       state.media = payload.media || {};
       state.languages = payload.languages || ["en"];
       lang = state.settings.lang === "fr" ? "fr" : "en";
-      trophyLang = knownGameLang(state.settings.gameLang) || knownGameLang(state.settings.trophyLang) || (lang === "fr" ? "fr" : "en");
-      state.settings.gameLang = trophyLang;
-      state.settings.trophyLang = trophyLang;
+      state.settings.gameLang = trophyLang();
+      state.settings.trophyLang = trophyLang();
       render();
     });
     document.querySelector("#lang").addEventListener("click", () => {

@@ -20,16 +20,15 @@ Le détail est dans [INSTALL.md](INSTALL.md).
 `Ravn.exe` ouvre le lanceur. Il n'ouvre pas le navigateur.
 
 - Chemins : le dossier du jeu, et le dossier de mise à jour si vous en avez un. Aucun des deux n'est modifié.
-- Réglages : sortie, fenêtre, limite à 30 ou 60 images par seconde, filtrage anisotrope, netteté. Le jeu dessine sa propre scène en 1080p à son propre rythme : il n'existe pas encore de patch de résolution ou de cadence pour lui. Ces réglages sont écrits dans `ps4rt.ini`, le fichier du menu en jeu : un changement fait en jeu se retrouve ici.
-- Trophées : lus dans le `trophy00.trp` de votre dossier de jeu. Rien n'est envoyé. Quand le jeu en obtient un, une carte s'affiche quelques secondes, sans prendre la manette.
-- Le bouton globe : la langue du jeu. Seules les langues présentes dans votre dossier de jeu sont proposées.
+- Réglages : ceux du menu en jeu de la version Linux. Résolution de sortie, fenêtre, upscaling (Désactivé / Original, FSR 3.1, FSR 4 v07), filtrage anisotrope et netteté. Le jeu calcule sa scène en 1080p à sa propre cadence et FSR la reconstruit à la taille de sortie ; FSR 4 demande un GPU récent et se replie sur FSR 3.1. Ces réglages sont écrits dans `ps4rt.ini`, le fichier du menu en jeu : un changement fait en jeu se retrouve ici.
+- Trophées : lus dans le `trophy00.trp` de votre dossier de jeu. Rien n'est envoyé. Le panneau montre votre progression et se trie par ordre du jeu, obtenus d'abord ou rang. Quand le jeu en obtient un, une carte s'affiche quelques secondes, sans prendre la manette. Les trophées sont dans la langue de votre édition du jeu.
 - EN/FR : la langue du lanceur lui-même.
 
 En jeu, Insert, ou L2 + R3, ouvre l'incrustation.
 
 ## Ce qui n'est pas inclus
 
-Le dépôt d'origine a un portrait et des sons de menu tirés du jeu. Ils ne sont pas dans cette archive. L'incrustation fonctionne sans eux.
+Le dépôt d'origine a un portrait et des sons de menu tirés du jeu. Ils ne sont pas dans cette archive. L'incrustation fonctionne sans eux. Si vous les avez, placez `valkyria_overlay.png` et le dossier `sounds` dans `gpu\assets\`, à côté de `Ravn.exe`, comme dans la version Linux : Ravn les utilise.
 
 ## IA
 

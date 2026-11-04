@@ -34,6 +34,8 @@ ldd "$dest/bin/ps4rt-probe.exe" "$dest/bin/ps4rt-gpu-capabilities.exe" |
 rm -f "$dest/bin/vulkan-1.dll"
 
 cp run.py LICENSE "$dest/"
+# FSR 4 v07 passes and model (with their licence), as the Linux release ships them.
+cp -r fsr4_shaders "$dest/"
 cp -r scripts "$dest/"
 cp launcher/ravn/launcher_host.py launcher/ravn/index.html "$dest/ravn/"
 cp -r launcher/ravn/brand launcher/ravn/media "$dest/ravn/"
@@ -73,7 +75,7 @@ printf 'python312.zip\n.\nLib\\site-packages\n..\\scripts\n' > "$pth"
 find "$dest" -name __pycache__ -prune -exec rm -r {} +
 
 # No game files and nothing a player made, and no game-derived media.
-forbidden=$(find "$dest" \( -iname eboot.bin -o -iname sce_module -o -iname sce_sys -o -iname savedata \
+forbidden=$(find "$dest" -path "$dest/fsr4_shaders" -prune -o \( -iname eboot.bin -o -iname sce_module -o -iname sce_sys -o -iname savedata \
     -o -iname user -o -iname '*.log' -o -iname ps4rt.ini -o -iname launcher-state.json \
     -o -iname '*.spv' -o -iname '*.pkg' -o -iname '*.sprx' -o -iname '*.prx' -o -iname '*.trp' \
     -o -iname valkyria_overlay.png -o -iname 'Valkyria_*.wav' \) -print)
