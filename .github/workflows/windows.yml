@@ -18,10 +18,13 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      # Some FSR SDK paths are longer than the default 260-character Windows limit.
-      - name: Long paths
+      # Some FSR SDK paths are longer than the default 260-character Windows limit, and the
+      # FSR-Vulkan patches expect the files with LF endings, as they are stored.
+      - name: Git settings
         shell: pwsh
-        run: git config --system core.longpaths true
+        run: |
+          git config --system core.longpaths true
+          git config --system core.autocrlf false
 
       - uses: actions/checkout@v4
 
