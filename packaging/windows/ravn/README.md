@@ -22,7 +22,7 @@ The details are in [INSTALL.md](INSTALL.md).
 `Ravn.exe` opens the launcher. It does not open your browser.
 
 - Paths: the game folder, and the update folder if you have one. Neither folder is changed.
-- Settings: output, window, a 30 or 60 FPS limit, anisotropic filtering, sharpness. The game draws its own 1080p scene at its own pace: there is no resolution or frame rate patch for it yet. They are written to `ps4rt.ini`, the file the in-game menu uses, so a change made in game shows here too.
+- Settings: output, window, a 30 or 60 FPS limit, anisotropic filtering, sharpness. The game draws its own 1080p scene at its own pace: there is no resolution or frame rate patch for it yet. The settings are written to `ps4rt.ini`, the file the in-game menu uses, so a change made in game shows here too.
 - Trophies: read from `trophy00.trp` in your game folder. Nothing is sent. When the game earns one, a card shows for a few seconds and does not take the controller.
 - The globe button: the game language. Only the languages your game folder carries are listed.
 - EN/FR: the launcher's own language.
