@@ -66,3 +66,7 @@ CLAUDE.md
 !/gpu/assets/sounds/confirm.wav
 !/gpu/assets/sounds/cancel.wav
 !/gpu/assets/sounds/open.wav
+
+# Ravn launcher media, made by launcher/ravn/tools (no game art).
+!launcher/ravn/brand/logo.png
+!launcher/ravn/brand/fond-loop.mp4

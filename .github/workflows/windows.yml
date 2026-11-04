@@ -66,11 +66,29 @@ jobs:
           path: out/gpu-build.log
           if-no-files-found: ignore
 
-      - name: Upload executables
+      - name: Build Ravn.exe
+        run: bash packaging/windows/build_ravn.sh
+
+      # A Windows CPython only installs the Pillow and iced-x86 wheels into the embedded Python.
+      - uses: actions/setup-python@v5
+        id: winpython
+        with:
+          python-version: "3.12"
+
+      - name: Package
+        env:
+          WINPYTHON_WIN: ${{ steps.winpython.outputs.python-path }}
+          RAVN_VERSION: ${{ github.ref_name == 'main' && 'dev' || format('test-{0}', github.run_number) }}
+        run: |
+          export WINPYTHON=$(cygpath -u "$WINPYTHON_WIN")
+          export RAVN_VERSION=${RAVN_VERSION//\//-}
+          bash packaging/windows/package_ravn.sh
+
+      - name: Upload the Ravn archive
         uses: actions/upload-artifact@v4
         with:
-          name: valkyria-windows-exe
+          name: ravn-windows
           path: |
-            out/ps4rt-probe.exe
-            out/ps4rt-gpu-capabilities.exe
-            out/ps4rt-play.exe
+            dist/*.zip
+            dist/*.zip.sha256
+          compression-level: 0
