@@ -50,7 +50,7 @@ def module(path):
     def identity(name):
         parts = name.split('#')
         if len(parts) != 3:
-            raise ValueError(f'unsupported symbol encoding {name!r}')
+            return None  # plain names such as __start__Ztext are not linkable (as in link_modules)
         n, lib, mod = parts
         return (n, libraries[lib], modules[mod])
     symbols = []
@@ -108,6 +108,8 @@ def link(game, out):
     main_modules = {identity:key for key,identity in main['modules'].items()}
     def imported(symbol):
         key = symbol['identity']
+        if key is None:
+            raise ValueError(f'libc imports {symbol["name"]!r}, which has no NID encoding')
         if key not in identities:
             n,lib,mod = key
             name = (f'{n}#{main_libraries[lib]}#{main_modules[mod]}'
