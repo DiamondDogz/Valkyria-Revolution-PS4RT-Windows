@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import json
+import re
 import struct
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-# Public NP trophy keygen key. The communication id is read from the file.
+# Public NP trophy keygen key. The communication id comes from the game's sce_sys/npbind.dat.
 _TROPHY_KEY = bytes((
     0x21, 0xF4, 0x1A, 0x6B, 0xAD, 0x8A, 0x1D, 0x3E,
     0xCA, 0x7A, 0xD5, 0x86, 0xC1, 0x01, 0xB7, 0xA9,
@@ -139,15 +140,42 @@ def _decrypt_block(block: bytes, words: list[list[int]]) -> bytes:
     return bytes(state)
 
 
-def _communication_key(sample: bytes) -> list[list[int]]:
+def _ids_from_game(trp: Path) -> list[str]:
+    """The NP communication ids (NPWRnnnnn_nn) the game declares, read from sce_sys/npbind.dat
+    and sce_sys/nptitle.dat next to sce_sys/trophy/trophy00.trp."""
+    sce_sys = Path(trp).resolve().parent.parent
+    found = []
+    for name in ("npbind.dat", "nptitle.dat"):
+        try:
+            data = (sce_sys / name).read_bytes()
+        except OSError:
+            continue
+        for match in re.findall(rb"NPWR\d{5}_\d{2}", data):
+            value = match.decode()
+            if value not in found:
+                found.append(value)
+    return found
+
+
+def _try_id(sample: bytes, master, identity: str):
+    derived = _encrypt_block(identity.encode().ljust(16, b"\0"), master)
+    words = _words(derived)
+    plain = bytes(left ^ right for left, right in zip(_decrypt_block(sample[16:32], words), sample[:16]))
+    if plain.startswith(b"<!--") or plain.startswith(b"<?xml") or plain.startswith(b"<trophy"):
+        return words
+    return None
+
+
+def _communication_key(sample: bytes, candidates=()) -> list[list[int]]:
+    """The ESFM key: from the game's own communication id when it declares one, else by search."""
     master = _words(_TROPHY_KEY)
-    order = (17587, *range(17587), *range(17588, 100000))
-    for number in order:
-        identity = f"NPWR{number:05d}_00".encode().ljust(16, b"\0")
-        derived = _encrypt_block(identity, master)
-        words = _words(derived)
-        plain = bytes(left ^ right for left, right in zip(_decrypt_block(sample[16:32], words), sample[:16]))
-        if plain.startswith(b"<!--") or plain.startswith(b"<?xml") or plain.startswith(b"<trophy"):
+    for identity in candidates:
+        words = _try_id(sample, master, identity)
+        if words:
+            return words
+    for number in range(100000):
+        words = _try_id(sample, master, f"NPWR{number:05d}_00")
+        if words:
             return words
     raise ValueError("trophy communication id was not found")
 
@@ -182,7 +210,7 @@ def _entries(blob: bytes):
 def read_trp(path: Path) -> dict:
     blob = Path(path).read_bytes()
     files = dict(_entries(blob))
-    words = _communication_key(files["TROP.ESFM"])
+    words = _communication_key(files["TROP.ESFM"], _ids_from_game(path))
     present = [entry for entry in _LANGUAGES if entry[0] in files]
     parsed = {name: ET.fromstring(_decrypt_esfm(files[name], words)) for name, _code, _label in present}
     conf = ET.fromstring(_decrypt_esfm(files["TROPCONF.ESFM"], words))
