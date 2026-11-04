@@ -10,6 +10,9 @@ Everything in `../brand/` and `../media/` was made by the three programs in this
 python make_logo.py <google-fonts-checkout> ../brand/logo.png
 python make_loop.py ../brand/fond-loop.mp4
 python make_theme.py ../media/theme.mp3
+python make_icon.py <google-fonts-checkout> ../ravn.ico
 ```
 
-You can replace any of the three files. Keep the names.
+`make_icon.py` draws `ravn.ico`, the icon of Ravn.exe and of the runtime executables: an ivory R in Playfair Display with the gold rule.
+
+You can replace any of these files. Keep the names.

@@ -20,9 +20,10 @@ if [[ ! -f out/webview2/build/native/include/WebView2.h ]]; then
     (cd out/webview2 && unzip -q ../webview2.nupkg)
 fi
 [[ -f out/webview2/build/native/include/EventToken.h ]] || { echo 'EventToken.h is missing from the WebView2 package' >&2; exit 1; }
+llvm-windres -I launcher/ravn launcher/ravn/ravn.rc -O coff -o out/ravn-icon.o
 clang++ -std=c++17 -O2 -static -mwindows \
     -Iout/webview/core/include -Iout/webview2/build/native/include \
-    launcher/ravn/ravn.cc -o out/Ravn.exe \
+    launcher/ravn/ravn.cc out/ravn-icon.o -o out/Ravn.exe \
     -lws2_32 -lole32 -lshell32 -lshlwapi -luser32 -lversion -luuid -ladvapi32
 llvm-strip out/Ravn.exe
 echo "Built $PWD/out/Ravn.exe ($(stat -c %s out/Ravn.exe) bytes)"
