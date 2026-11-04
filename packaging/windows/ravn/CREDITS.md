@@ -1,5 +1,9 @@
 # Credits
 
+## Game
+
+*Valkyria Revolution* is © SEGA, developed by Media.Vision. It is not included.
+
 ## Runtime
 
 The game runtime is [HekamiAeon, valkyria-revolution-ps4rt](https://github.com/HekamiAeon/valkyria-revolution-ps4rt), GPL-2.0-or-later. Its own lineage (gow3_pc, bloodborne_pc, shadPS4 and others) and its third-party notices are in [UPSTREAM_CREDITS.md](UPSTREAM_CREDITS.md). Credit for that program stays with HekamiAeon and the people named there.
@@ -8,7 +12,7 @@ The Windows build files this port restores (`packaging/windows/`, `msys2-env.sh`
 
 ## Windows port
 
-Published by [DiamondDogz](https://github.com/DiamondDogz).
+Published and tested by [DiamondDogz](https://github.com/DiamondDogz). Written with [Claude](https://claude.ai) (Anthropic); the Kagekidan launcher it follows was written with [Grok](https://grok.com) (xAI). See [AI.md](AI.md).
 
 The Ravn launcher, its page and `Ravn.exe` follow the Kagekidan launcher of [Sakura-Wars-PS4RT-Windows](https://github.com/DiamondDogz/Sakura-Wars-PS4RT-Windows). The local trophy list and the in-game trophy card come from that port's windows-1.1.3.
 

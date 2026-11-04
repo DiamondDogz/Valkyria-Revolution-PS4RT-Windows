@@ -70,3 +70,6 @@ CLAUDE.md
 # Ravn launcher media, made by launcher/ravn/tools (no game art).
 !launcher/ravn/brand/logo.png
 !launcher/ravn/brand/fond-loop.mp4
+
+# README screenshots of the Windows port
+!docs/images/windows/*.jpg
