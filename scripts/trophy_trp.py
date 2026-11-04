@@ -240,7 +240,7 @@ def write_card_cache(trp: Path, folder: Path, lang: str) -> int:
     folder.mkdir(parents=True, exist_ok=True)
     lines = []
     for item in catalog["trophies"]:
-        text = item["text"].get(chosen) or item["text"].get("en") or {}
+        text = item["text"].get(chosen) or item["text"].get("en") or next(iter(item["text"].values()), {})
         letter = {"Platinum": "P", "Gold": "G", "Silver": "S", "Bronze": "B"}.get(item["grade"], "B")
         lines.append("\t".join((
             str(item["id"]).zfill(3),

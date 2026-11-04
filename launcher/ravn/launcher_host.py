@@ -31,9 +31,9 @@ ROOT = port_root()
 sys.path.insert(0, str(ROOT / "scripts"))
 import graphics_options  # noqa: E402  (scripts/ is only on the path from here)
 try:
-    from trophy_trp import read_trp, read_unlocks
+    from trophy_trp import read_trp, read_unlocks, write_card_cache
 except ImportError:  # the trophy reader is optional
-    read_trp = read_unlocks = None
+    read_trp = read_unlocks = write_card_cache = None
 
 PAGE = HERE / "index.html"
 BRAND = HERE / "brand"
@@ -273,8 +273,14 @@ def launch(state):
     env["PS4RT_TROPHY_LANG"] = lang
     env["PS4RT_TROPHY_FILE"] = str(user_dir() / "trophies.json")
     trp = trophy_file(game, update)
-    if trp:
-        env["PS4RT_TROPHY_TRP"] = str(trp)
+    if trp and write_card_cache:
+        # The in-game card reads its names and icons from this local cache, in the chosen language.
+        try:
+            card_dir = user_dir() / "trophy-card"
+            write_card_cache(trp, card_dir, lang)
+            env["PS4RT_TROPHY_CARD_DIR"] = str(card_dir)
+        except (OSError, ValueError, KeyError):
+            pass
     env["PYTHONUNBUFFERED"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
     command = [console_python(), str(ROOT / "run.py")]
