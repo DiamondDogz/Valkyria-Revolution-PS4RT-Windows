@@ -3,6 +3,7 @@ name: Windows build
 on:
   push:
     branches: [main, "claude/**"]
+    tags: ["windows-*"]
   pull_request:
   workflow_dispatch:
 
@@ -102,9 +103,10 @@ jobs:
         timeout-minutes: 20
         env:
           WINPYTHON_WIN: ${{ steps.winpython.outputs.python-path }}
-          RAVN_VERSION: ${{ github.ref_name == 'main' && 'dev' || format('test-{0}', github.run_number) }}
+          RAVN_VERSION: ${{ startsWith(github.ref, 'refs/tags/windows-') && github.ref_name || (github.ref_name == 'main' && 'dev' || format('test-{0}', github.run_number)) }}
         run: |
           export WINPYTHON=$(cygpath -u "$WINPYTHON_WIN")
+          export RAVN_VERSION=${RAVN_VERSION#windows-}
           export RAVN_VERSION=${RAVN_VERSION//\//-}
           bash packaging/windows/package_ravn.sh
 
