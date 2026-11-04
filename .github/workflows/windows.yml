@@ -1,0 +1,67 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The MSYS2 CLANG64 toolchain and libraries listed in packaging/windows/README.md.
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANG64
+          update: true
+          install: git patch zip
+          pacboy: >-
+            toolchain:p cmake:p ninja:p pkgconf:p python:p
+            vulkan-headers:p vulkan-loader:p vulkan-memory-allocator:p glslang:p
+            sdl3:p fmt:p boost:p robin-map:p xxhash:p ffmpeg:p zydis:p
+            spirv-tools:p spirv-headers:p spirv-cross:p
+
+      - name: Toolchain
+        run: |
+          clang --version | head -1
+          cmake --version | head -1
+          pkg-config --modversion sdl3 vulkan libavcodec
+
+      # setup-msys2 already puts CLANG64 first on PATH; msys2-env.sh only adds C:/msys64 when present.
+      - name: Build
+        run: bash build.sh
+
+      - name: Build log
+        if: always()
+        run: |
+          if [ -f out/gpu-build.log ]; then
+            grep -E "error|warning: .*\[-W" out/gpu-build.log | head -200 || true
+          fi
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: out/gpu-build.log
+          if-no-files-found: ignore
+
+      - name: Upload executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: valkyria-windows-exe
+          path: |
+            out/ps4rt-probe.exe
+            out/ps4rt-gpu-capabilities.exe
+            out/ps4rt-play.exe
