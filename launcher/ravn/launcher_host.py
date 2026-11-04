@@ -43,6 +43,8 @@ LOG = ROOT / "launcher.log"
 PORT_FILE = ROOT / "launcher.port"
 CONFIG = ROOT / "ps4rt.ini"
 LOCK = threading.Lock()
+# Its own lock: the trophy file is read while LOCK is free (a request holding LOCK must not wait on it).
+TROPHY_LOCK = threading.Lock()
 PROCESS = {"handle": None}
 TROPHY_CACHE = {"path": "", "stamp": 0.0, "catalog": None}
 
@@ -201,7 +203,7 @@ def trophy_file(game):
 
 def trophy_catalog(trp):
     stamp = trp.stat().st_mtime
-    with LOCK:
+    with TROPHY_LOCK:
         if TROPHY_CACHE["path"] != str(trp) or TROPHY_CACHE["stamp"] != stamp:
             TROPHY_CACHE["catalog"] = read_trp(trp)
             TROPHY_CACHE["path"] = str(trp)
@@ -384,8 +386,10 @@ class Handler(BaseHTTPRequestHandler):
                     state = load_state()
                     state["paths"].update(found)
                     save_state(state)
-                    self.send_json(200, {**state["paths"], "languages": available_languages(state["paths"])})
-                    return
+            if path == "/api/browse":
+                # Outside LOCK: reading the trophy file takes a moment and has its own lock.
+                self.send_json(200, {**state["paths"], "languages": available_languages(state["paths"])})
+                return
             if path == "/api/play":
                 with LOCK:
                     state = load_state()
