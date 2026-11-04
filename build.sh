@@ -13,16 +13,21 @@ MINGW*|MSYS*)
           ! -f gpu/third_party/xbyak/xbyak/xbyak.h ]]; then
         git submodule update --init --recursive
     fi
+    # FSR-Vulkan is vendored in this repository, not a submodule: git apply then resolves the
+    # patch paths from the repository root, so they need --directory (otherwise every patch is
+    # skipped without a word and the MSYS2 CLANG64 fixes in 0003 never reach the build).
+    fsr=gpu/third_party/fsr-vulkan
+    if [[ -e $fsr/.git ]]; then fsr_apply=(git -C "$fsr" apply); else fsr_apply=(git apply --directory="$fsr"); fi
     for patch in gpu/patches/fsr-vulkan/*.patch; do
-        if ! git -C gpu/third_party/fsr-vulkan apply --reverse --check "$PWD/$patch" 2>/dev/null; then
-            git -C gpu/third_party/fsr-vulkan apply "$PWD/$patch"
+        if ! "${fsr_apply[@]}" --reverse --check "$PWD/$patch" 2>/dev/null; then
+            "${fsr_apply[@]}" "$PWD/$patch"
         fi
     done
     cmake -S gpu -B out/gpu -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPS4RT_PGO=off \
         -DPS4RT_LTO="${PS4RT_LTO:-OFF}" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ >/dev/null
     echo "GPU library and loader: LTO ${PS4RT_LTO:-OFF}"
     if ! ninja -C out/gpu ps4rt-probe ps4rt-gpu-capabilities ps4rt-play > out/gpu-build.log 2>&1; then
-        grep -v '^\[' out/gpu-build.log | tail -40 >&2
+        grep -E 'error|FAILED' out/gpu-build.log | head -60 >&2
         echo 'Build failed (full log: out/gpu-build.log)' >&2; exit 1
     fi
     cp out/gpu/ps4rt-probe.exe out/gpu/ps4rt-gpu-capabilities.exe out/gpu/ps4rt-play.exe out/
