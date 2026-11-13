@@ -2,10 +2,15 @@ name: Windows build
 
 on:
   push:
-    branches: [main, "claude/**"]
+    branches: [main, "claude/**", "crowbar-pause"]
     tags: ["windows-*"]
   pull_request:
   workflow_dispatch:
+
+# Tags windows-X.Y publish a release (a pre-release when the version has a suffix, windows-1.3-rc.1);
+# the branch claude/crowbar-pause publishes test pre-releases windows-1.2.1-pause.N for Crowbar.
+permissions:
+  contents: write
 
 concurrency:
   group: windows-${{ github.ref }}
@@ -103,7 +108,7 @@ jobs:
         timeout-minutes: 20
         env:
           WINPYTHON_WIN: ${{ steps.winpython.outputs.python-path }}
-          RAVN_VERSION: ${{ startsWith(github.ref, 'refs/tags/windows-') && github.ref_name || (github.ref_name == 'main' && 'dev' || format('test-{0}', github.run_number)) }}
+          RAVN_VERSION: ${{ startsWith(github.ref, 'refs/tags/windows-') && github.ref_name || (github.ref_name == 'crowbar-pause' && format('1.2.1-pause.{0}', github.run_number) || (github.ref_name == 'main' && 'dev' || format('test-{0}', github.run_number))) }}
         run: |
           export WINPYTHON=$(cygpath -u "$WINPYTHON_WIN")
           export RAVN_VERSION=${RAVN_VERSION#windows-}
@@ -118,3 +123,26 @@ jobs:
             dist/*.zip
             dist/*.zip.sha256
           compression-level: 0
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/windows-') || github.ref_name == 'crowbar-pause'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          zip=$(ls dist/*.zip | head -1)
+          version=$(basename "$zip" .zip); version=${version#Ravn-windows-}
+          tag="windows-$version"
+          sha=$(cut -d' ' -f1 "$zip.sha256")
+          pre=()
+          [[ $version == *-* ]] && pre=(--prerelease)
+          if [[ $GITHUB_REF_NAME == crowbar-pause ]]; then
+            printf 'Test build of branch crowbar-pause (%s): pause from Crowbar'"'"'s Guide menu (crowbar-sdk 1.2).\n\nSHA-256: %s\n' "${GITHUB_SHA:0:7}" "$sha" > notes.md
+          else
+            printf 'SHA-256: %s\n' "$sha" > notes.md
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/*.zip dist/*.zip.sha256 --clobber
+          else
+            gh release create "$tag" dist/*.zip dist/*.zip.sha256 --target "$GITHUB_SHA" "${pre[@]}" --title "$tag" --notes-file notes.md
+          fi
