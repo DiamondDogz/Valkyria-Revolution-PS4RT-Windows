@@ -2,7 +2,7 @@ name: Windows build
 
 on:
   push:
-    branches: [main, "claude/**", "crowbar-pause"]
+    branches: [main, "claude/**", "crowbar-pause", "crowbar-sdk-1.4"]
     tags: ["windows-*"]
   pull_request:
   workflow_dispatch:
@@ -125,7 +125,7 @@ jobs:
         timeout-minutes: 20
         env:
           WINPYTHON_WIN: ${{ steps.winpython.outputs.python-path }}
-          RAVN_VERSION: ${{ inputs.version || (startsWith(github.ref, 'refs/tags/windows-') && github.ref_name) || (github.ref_name == 'crowbar-pause' && format('1.2.1-pause.{0}', github.run_number) || (github.ref_name == 'main' && 'dev' || format('test-{0}', github.run_number))) }}
+          RAVN_VERSION: ${{ inputs.version || (startsWith(github.ref, 'refs/tags/windows-') && github.ref_name) || (github.ref_name == 'crowbar-pause' && format('1.2.1-pause.{0}', github.run_number)) || (github.ref_name == 'crowbar-sdk-1.4' && format('1.2.2-rc.{0}', github.run_number) || (github.ref_name == 'main' && 'dev' || format('test-{0}', github.run_number))) }}
         run: |
           export WINPYTHON=$(cygpath -u "$WINPYTHON_WIN")
           export RAVN_VERSION=${RAVN_VERSION#windows-}
@@ -142,7 +142,7 @@ jobs:
           compression-level: 0
 
       - name: Publish the release
-        if: inputs.version || startsWith(github.ref, 'refs/tags/windows-') || github.ref_name == 'crowbar-pause'
+        if: inputs.version || startsWith(github.ref, 'refs/tags/windows-') || github.ref_name == 'crowbar-pause' || github.ref_name == 'crowbar-sdk-1.4'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -153,8 +153,8 @@ jobs:
           sha=$(cut -d' ' -f1 "$zip.sha256")
           pre=()
           [[ $version == *-* ]] && pre=(--prerelease)
-          if [[ $GITHUB_REF_NAME == crowbar-pause ]]; then
-            printf 'Test build of branch crowbar-pause (%s): pause from Crowbar'"'"'s Guide menu (crowbar-sdk 1.2).\n\nSHA-256: %s\n' "${GITHUB_SHA:0:7}" "$sha" > notes.md
+          if [[ $GITHUB_REF_NAME == crowbar-pause || $GITHUB_REF_NAME == crowbar-sdk-1.4 ]]; then
+            printf 'Test build of branch crowbar-pause (%s): Crowbar'"'"'s Guide pause, test-profile unlock and quit (crowbar-sdk 1.2 to 1.4).\n\nSHA-256: %s\n' "${GITHUB_SHA:0:7}" "$sha" > notes.md
           elif [[ -f packaging/windows/release-notes.md ]]; then
             sed -e "s/@SHA256@/$sha/" -e "s/@VERSION@/$version/" packaging/windows/release-notes.md > notes.md
           else
