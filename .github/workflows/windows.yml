@@ -163,5 +163,5 @@ jobs:
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" dist/*.zip dist/*.zip.sha256 --clobber
           else
-            gh release create "$tag" dist/*.zip dist/*.zip.sha256 --target "$GITHUB_SHA" "${pre[@]}" --title "$tag" --notes-file notes.md
+            gh release create "$tag" dist/*.zip dist/*.zip.sha256 --target "$GITHUB_SHA" "${pre[@]}" --title "Ravn $tag" --notes-file notes.md
           fi
