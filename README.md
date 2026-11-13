@@ -4,7 +4,7 @@ Windows port of [valkyria-revolution-ps4rt](https://github.com/HekamiAeon/valkyr
 
 Unofficial. Not affiliated with SEGA. The game is not included.
 
-Download: [windows-1.2.1](https://github.com/DiamondDogz/Valkyria-Revolution-PS4RT-Windows/releases/tag/windows-1.2.1): windows-1.2 plus, with [Crowbar](https://github.com/DiamondDogz/crowbar), a Guide button that pauses the game (`src/runtime_crowbar_pause.c`). It needs your own extracted copy of the base game, **CUSA06810**, with no update, as the Linux release does.
+Download: [windows-1.2.2](https://github.com/DiamondDogz/Valkyria-Revolution-PS4RT-Windows/releases/tag/windows-1.2.2): windows-1.2 plus, with [Crowbar](https://github.com/DiamondDogz/crowbar), a Guide button that pauses the game, a clean Quit, and trophy unlocks from Crowbar's test profile (`src/runtime_crowbar_pause.c`). It needs your own extracted copy of the base game, **CUSA06810**, with no update, as the Linux release does.
 
 Tested on Windows 11 Pro for Workstations, version 26H2, an Intel Core i9-12900KF, 128 GB of DDR5 at 4000 MT/s, an NVIDIA GeForce RTX 3090 24 GB with Studio driver 617.42 (6 October 2026), and a 4 TB NVMe SSD (PCI Express 4.0). That is the test machine, not a minimum. The game started and played through the Molda campaign; trophies unlocked. A complete playthrough is not verified.
 

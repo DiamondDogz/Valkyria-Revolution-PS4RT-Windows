@@ -2,6 +2,8 @@ Windows port of Valkyria Revolution PS4RT, with the Ravn launcher. Unofficial, n
 
 windows-1.2 plus:
 
+- New in 1.2.2, with Crowbar: Quit closes the game cleanly (exit code 0), and Crowbar's trophy test profile can unlock a trophy through the runtime, real trophies untouched (crowbar-sdk 1.4).
+
 - With [Crowbar](https://github.com/DiamondDogz/crowbar), the Guide button pauses the game (crowbar-sdk 1.2): picture, sound and timers stop while its menu is open, and the controller goes back to the game once released. During a movie, Crowbar says the game cannot pause yet.
 - The Windows build on GitHub works again (GitHub's own MSYS2 no longer mixes with the build's).
 
