@@ -54,7 +54,16 @@ jobs:
 
       # setup-msys2 already puts CLANG64 first on PATH; msys2-env.sh only adds C:/msys64 when present.
       - name: Build
-        run: bash build.sh
+        env:
+          PS4RT_BUILD_JOBS: "2"
+        run: |
+          set +e
+          bash build.sh
+          code=$?
+          echo "build.sh exit code: $code"
+          tail -5 out/gpu-build.log 2>/dev/null
+          ls -l out/*.exe out/gpu/*.exe 2>/dev/null
+          exit $code
 
       - name: Build log
         if: always()

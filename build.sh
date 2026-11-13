@@ -26,7 +26,7 @@ MINGW*|MSYS*)
     cmake -S gpu -B out/gpu -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPS4RT_PGO=off \
         -DPS4RT_LTO="${PS4RT_LTO:-OFF}" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ >/dev/null
     echo "GPU library and loader: LTO ${PS4RT_LTO:-OFF}"
-    if ! ninja -C out/gpu ps4rt-probe ps4rt-gpu-capabilities ps4rt-play > out/gpu-build.log 2>&1; then
+    if ! ninja -j "${PS4RT_BUILD_JOBS:-4}" -C out/gpu ps4rt-probe ps4rt-gpu-capabilities ps4rt-play > out/gpu-build.log 2>&1; then
         grep -E 'error|FAILED' out/gpu-build.log | head -60 >&2
         echo 'Build failed (full log: out/gpu-build.log)' >&2; exit 1
     fi
