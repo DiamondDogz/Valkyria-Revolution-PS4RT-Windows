@@ -52,10 +52,13 @@ jobs:
           cmake --version | head -1
           pkg-config --modversion sdl3 vulkan libavcodec
 
-      # setup-msys2 already puts CLANG64 first on PATH; msys2-env.sh only adds C:/msys64 when present.
       - name: Build
         env:
           PS4RT_BUILD_JOBS: "2"
+          # GitHub's Windows image now ships its own C:/msys64; msys2-env.sh would put it first on
+          # PATH and mix two MSYS2 runtimes (commands then die with code 127). setup-msys2 already
+          # puts its CLANG64 first, so msys2-env.sh is told to add nothing.
+          MSYS2_ROOT: /nonexistent
         run: |
           set +e
           bash build.sh
